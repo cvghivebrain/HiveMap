@@ -21,6 +21,16 @@ object Form1: TForm1
     Width = 57
     Height = 57
   end
+  object pbWorkspace: TPaintBox
+    Left = 0
+    Top = 88
+    Width = 105
+    Height = 105
+    OnMouseDown = pbWorkspaceMouseDown
+    OnMouseLeave = pbWorkspaceMouseLeave
+    OnMouseMove = pbWorkspaceMouseMove
+    OnMouseUp = pbWorkspaceMouseUp
+  end
   object btnLoad: TButton
     Left = 8
     Top = 8
