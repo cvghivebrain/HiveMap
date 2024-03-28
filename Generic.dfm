@@ -40,6 +40,19 @@ object Form1: TForm1
     TabOrder = 0
     OnClick = btnLoadClick
   end
+  object memINI: TMemo
+    Left = 969
+    Top = 0
+    Width = 320
+    Height = 185
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Courier New'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 1
+  end
   object dlgLoad: TOpenDialog
     Left = 8
     Top = 40

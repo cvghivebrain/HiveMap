@@ -13,9 +13,12 @@ type
     btnLoad: TButton;
     dlgLoad: TOpenDialog;
     pbWorkspace: TPaintBox;
+    memINI: TMemo;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
+    procedure LoadPNG;
+    procedure LoadINI;
     procedure UpdateDisplay;
     procedure pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -34,6 +37,7 @@ var
   Form1: TForm1;
   pngloaded, drag: boolean;
   pos_x, pos_y, prev_x, prev_y: integer;
+  pngpath, inipath: string;
 
 implementation
 
@@ -52,6 +56,7 @@ begin
   pbWorkspace.Width := Form1.ClientWidth-pbWorkspace.Left-320;
   pbWorkspace.Height := Form1.ClientHeight-pbWorkspace.Top;
   UpdateDisplay;
+  memINI.Left := Form1.ClientWidth-memINI.Width;
 end;
 
 procedure TForm1.UpdateDisplay;
@@ -71,11 +76,48 @@ begin
     begin
     if ExtractFileExt(dlgLoad.FileName) = '.png' then
       begin
-      LoadSheet(dlgLoad.FileName); // Make PNG available for display.
-      pngloaded := true;
+      pngpath := dlgLoad.FileName;
+      LoadPNG;
+      inipath := ChangeFileExt(pngpath,'.ini');
+      if FileExists(inipath) then LoadINI;
       UpdateDisplay;
-      end;
+      end
+    else if ExtractFileExt(dlgLoad.FileName) = '.ini' then
+      begin
+      pngpath := '';
+      inipath := dlgLoad.FileName;
+      LoadINI;
+      if pngpath = '' then pngpath := ChangeFileExt(inipath,'.png');
+      LoadPNG;
+      UpdateDisplay;
+      end
+    else ShowMessage('Unknown file type.');
     end;
+end;
+
+procedure TForm1.LoadPNG;
+begin
+  if (pngpath <> '') and FileExists(pngpath) then
+    begin
+    LoadSheet(pngpath); // Make PNG available for display.
+    pngloaded := true;
+    end
+  else ShowMessage('PNG not found.');
+end;
+
+procedure TForm1.LoadINI;
+var inifile: textfile;
+  s: string;
+begin
+  AssignFile(inifile,inipath); // Open ini file.
+  Reset(inifile);
+  while not eof(inifile) do
+    begin
+    ReadLn(inifile,s);
+    if AnsiPos('image=',s) = 1 then pngpath := ExtractFilePath(inipath)+Explode(s,'image=',1)
+    else if s <> '' then memINI.Lines.Add(s);
+    end;
+  CloseFile(inifile);
 end;
 
 procedure TForm1.pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
@@ -107,7 +149,7 @@ begin
   dy := prev_y-Y;
   prev_x := X;
   prev_y := Y;
-  pos_x := Max(pos_x+dx,0);
+  pos_x := Max(pos_x+dx,0); // New position, always 0 or higher.
   pos_y := Max(pos_y+dy,0);
   UpdateDisplay;
 end;
