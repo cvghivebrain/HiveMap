@@ -53,6 +53,23 @@ object Form1: TForm1
     ParentFont = False
     TabOrder = 1
   end
+  object menuZoom: TComboBox
+    Left = 104
+    Top = 8
+    Width = 49
+    Height = 21
+    Style = csDropDownList
+    ItemIndex = 0
+    TabOrder = 2
+    Text = '1x'
+    OnChange = menuZoomChange
+    Items.Strings = (
+      '1x'
+      '2x'
+      '3x'
+      '4x'
+      '5x')
+  end
   object dlgLoad: TOpenDialog
     Left = 8
     Top = 40

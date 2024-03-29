@@ -14,6 +14,7 @@ type
     dlgLoad: TOpenDialog;
     pbWorkspace: TPaintBox;
     memINI: TMemo;
+    menuZoom: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
@@ -27,6 +28,7 @@ type
     procedure pbWorkspaceMouseLeave(Sender: TObject);
     procedure pbWorkspaceMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
+    procedure menuZoomChange(Sender: TObject);
   private
     { Private declarations }
   public
@@ -36,7 +38,7 @@ type
 var
   Form1: TForm1;
   pngloaded, drag: boolean;
-  pos_x, pos_y, prev_x, prev_y: integer;
+  pos_x, pos_y, prev_x, prev_y, scale: integer;
   pngpath, inipath: string;
 
 implementation
@@ -48,6 +50,7 @@ begin
   InitImage(Form1,imgMain); // Set image width & height to match form.
   pos_x := 0;
   pos_y := 0;
+  scale := 1;
 end;
 
 procedure TForm1.FormResize(Sender: TObject);
@@ -64,9 +67,9 @@ var w, h: integer;
 begin
   FillScreen(40,44,52);
   if not pngloaded then exit; // Do nothing further if no PNG is loaded.
-  w := Min(PNG.Width-pos_x,pbWorkspace.Width);
-  h := Min(PNG.Height-pos_y,pbWorkspace.Height);
-  DrawPNG(pos_x,pos_y,w,h,pbWorkspace.Left,pbWorkspace.Top,1,1,0,255,255,255,255);
+  w := Min(PNG.Width-(pos_x div scale),pbWorkspace.Width div scale);
+  h := Min(PNG.Height-(pos_y div scale),pbWorkspace.Height div scale);
+  DrawPNG(pos_x div scale,pos_y div scale,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255);
   pic.Refresh;
 end;
 
@@ -103,6 +106,16 @@ begin
     pngloaded := true;
     end
   else ShowMessage('PNG not found.');
+end;
+
+procedure TForm1.menuZoomChange(Sender: TObject);
+var newscale: integer;
+begin
+  newscale := StrToInt(Explode(menuZoom.Items[menuZoom.ItemIndex],'x',0));
+  pos_x := Trunc(pos_x*(newscale/scale)); // Adjust position for new scale factor.
+  pos_y := Trunc(pos_y*(newscale/scale));
+  scale := newscale;
+  UpdateDisplay;
 end;
 
 procedure TForm1.LoadINI;
