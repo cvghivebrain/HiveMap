@@ -18,9 +18,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
-    procedure LoadPNG;
-    procedure LoadINI;
-    procedure UpdateDisplay;
     procedure pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure pbWorkspaceMouseUp(Sender: TObject; Button: TMouseButton;
@@ -31,6 +28,10 @@ type
     procedure menuZoomChange(Sender: TObject);
   private
     { Private declarations }
+    procedure LoadPNG;
+    procedure LoadINI;
+    procedure UpdateDisplay;
+    procedure CreatePal;
   public
     { Public declarations }
   end;
@@ -39,7 +40,8 @@ var
   Form1: TForm1;
   pngloaded, drag: boolean;
   pos_x, pos_y, prev_x, prev_y, scale: integer;
-  pngpath, inipath: string;
+  pngpath, pngpathrel, inipath: string;
+  palarray: array[0..63] of TColor;
 
 implementation
 
@@ -80,6 +82,7 @@ begin
     if ExtractFileExt(dlgLoad.FileName) = '.png' then
       begin
       pngpath := dlgLoad.FileName;
+      pngpathrel := ExtractFileName(pngpath);
       LoadPNG;
       inipath := ChangeFileExt(pngpath,'.ini');
       if FileExists(inipath) then LoadINI;
@@ -90,7 +93,11 @@ begin
       pngpath := '';
       inipath := dlgLoad.FileName;
       LoadINI;
-      if pngpath = '' then pngpath := ChangeFileExt(inipath,'.png');
+      if pngpath = '' then
+        begin
+        pngpath := ChangeFileExt(inipath,'.png');
+        pngpathrel := ExtractFileName(pngpath);
+        end;
       LoadPNG;
       UpdateDisplay;
       end
@@ -104,18 +111,32 @@ begin
     begin
     LoadSheet(pngpath); // Make PNG available for display.
     pngloaded := true;
+    CreatePal;
     end
   else ShowMessage('PNG not found.');
 end;
 
-procedure TForm1.menuZoomChange(Sender: TObject);
-var newscale: integer;
+procedure TForm1.CreatePal;
+var i, j, k, p: integer;
+  col: TColor;
+  match: boolean;
 begin
-  newscale := StrToInt(Explode(menuZoom.Items[menuZoom.ItemIndex],'x',0));
-  pos_x := Trunc(pos_x*(newscale/scale)); // Adjust position for new scale factor.
-  pos_y := Trunc(pos_y*(newscale/scale));
-  scale := newscale;
-  UpdateDisplay;
+  for i := 0 to 63 do palarray[i] := 0; // Clear palette.
+  p := 0; // Start position in palette.
+  for i := 0 to PNG.Height-1 do
+    for j := 0 to PNG.Width-1 do
+      begin
+      col := PNG.Pixels[j,i]; // Read colour value from pixel.
+      match := false;
+      for k := 0 to p do
+        if col = palarray[k] then match := true; // Check if colour is already in palette.
+      if not match then
+        begin
+        palarray[p] := col; // Save new colour.
+        Inc(p);
+        end;
+      if p = 64 then exit; // Finish now if palette is full.
+      end;
 end;
 
 procedure TForm1.LoadINI;
@@ -127,10 +148,24 @@ begin
   while not eof(inifile) do
     begin
     ReadLn(inifile,s);
-    if AnsiPos('image=',s) = 1 then pngpath := ExtractFilePath(inipath)+Explode(s,'image=',1)
+    if AnsiPos('image=',s) = 1 then
+      begin
+      pngpathrel := Explode(s,'image=',1);
+      pngpath := ExtractFilePath(inipath)+pngpathrel;
+      end
     else if s <> '' then memINI.Lines.Add(s);
     end;
   CloseFile(inifile);
+end;
+
+procedure TForm1.menuZoomChange(Sender: TObject);
+var newscale: integer;
+begin
+  newscale := StrToInt(Explode(menuZoom.Items[menuZoom.ItemIndex],'x',0));
+  pos_x := Trunc(pos_x*(newscale/scale)); // Adjust position for new scale factor.
+  pos_y := Trunc(pos_y*(newscale/scale));
+  scale := newscale;
+  UpdateDisplay;
 end;
 
 procedure TForm1.pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
