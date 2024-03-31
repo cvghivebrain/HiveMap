@@ -7,7 +7,8 @@ uses
   CRCFunc in 'CRCFunc.pas',
   ExplodeFunc in 'ExplodeFunc.pas',
   FileFunc in 'FileFunc.pas',
-  SolveFunc in 'SolveFunc.pas';
+  SolveFunc in 'SolveFunc.pas',
+  MiscFunc in 'MiscFunc.pas';
 
 {$R *.res}
 

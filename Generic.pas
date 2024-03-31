@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StrUtils, ExtCtrls, StdCtrls, ScanLineFunc, pngimage, CRCFunc,
-  ExplodeFunc, FileFunc, SolveFunc, Math;
+  ExplodeFunc, FileFunc, SolveFunc, Math, MiscFunc;
 
 type
   TForm1 = class(TForm)
@@ -15,6 +15,7 @@ type
     pbWorkspace: TPaintBox;
     memINI: TMemo;
     menuZoom: TComboBox;
+    pbPalette: TPaintBox;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
@@ -65,13 +66,16 @@ begin
 end;
 
 procedure TForm1.UpdateDisplay;
-var w, h: integer;
+var w, h, i: integer;
 begin
   FillScreen(40,44,52);
   if not pngloaded then exit; // Do nothing further if no PNG is loaded.
   w := Min(PNG.Width-(pos_x div scale),pbWorkspace.Width div scale);
   h := Min(PNG.Height-(pos_y div scale),pbWorkspace.Height div scale);
   DrawPNG(pos_x div scale,pos_y div scale,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255);
+  for i := 0 to 63 do
+    DrawRect(GetRValue(palarray[i]),GetGValue(palarray[i]),GetBValue(palarray[i]),255,
+      pbPalette.Left+((i mod 16)*20),pbPalette.Top+((i div 16)*20),20,20); // Draw palette.
   pic.Refresh;
 end;
 
@@ -79,11 +83,13 @@ procedure TForm1.btnLoadClick(Sender: TObject);
 begin
   if dlgLoad.Execute then
     begin
+    memINI.Clear;
     if ExtractFileExt(dlgLoad.FileName) = '.png' then
       begin
       pngpath := dlgLoad.FileName;
       pngpathrel := ExtractFileName(pngpath);
       LoadPNG;
+      CreatePal;
       inipath := ChangeFileExt(pngpath,'.ini');
       if FileExists(inipath) then LoadINI;
       UpdateDisplay;
@@ -111,7 +117,6 @@ begin
     begin
     LoadSheet(pngpath); // Make PNG available for display.
     pngloaded := true;
-    CreatePal;
     end
   else ShowMessage('PNG not found.');
 end;
@@ -128,7 +133,7 @@ begin
       begin
       col := PNG.Pixels[j,i]; // Read colour value from pixel.
       match := false;
-      for k := 0 to p do
+      for k := 0 to p-1 do
         if col = palarray[k] then match := true; // Check if colour is already in palette.
       if not match then
         begin
@@ -141,7 +146,8 @@ end;
 
 procedure TForm1.LoadINI;
 var inifile: textfile;
-  s: string;
+  s, s2: string;
+  i: integer;
 begin
   AssignFile(inifile,inipath); // Open ini file.
   Reset(inifile);
@@ -150,8 +156,14 @@ begin
     ReadLn(inifile,s);
     if AnsiPos('image=',s) = 1 then
       begin
-      pngpathrel := Explode(s,'image=',1);
-      pngpath := ExtractFilePath(inipath)+pngpathrel;
+      pngpathrel := Explode(s,'image=',1); // Save relative path to PNG.
+      pngpath := ExtractFilePath(inipath)+pngpathrel; // Save absolute path to PNG.
+      end
+    else if AnsiPos('palette=',s) = 1 then
+      begin
+      s2 := Explode(s,'palette=',1);
+      for i := 0 to 63 do
+        palarray[i] := StrToTColor(Explode(s2,',',i)); // Write palette.
       end
     else if s <> '' then memINI.Lines.Add(s);
     end;

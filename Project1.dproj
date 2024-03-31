@@ -131,6 +131,7 @@
         <DCCReference Include="ExplodeFunc.pas"/>
         <DCCReference Include="FileFunc.pas"/>
         <DCCReference Include="SolveFunc.pas"/>
+        <DCCReference Include="MiscFunc.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
