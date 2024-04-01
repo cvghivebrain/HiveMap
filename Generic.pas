@@ -16,6 +16,7 @@ type
     memINI: TMemo;
     menuZoom: TComboBox;
     pbPalette: TPaintBox;
+    btnSave: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
@@ -27,6 +28,7 @@ type
     procedure pbWorkspaceMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure menuZoomChange(Sender: TObject);
+    procedure btnSaveClick(Sender: TObject);
   private
     { Private declarations }
     procedure LoadPNG;
@@ -167,6 +169,22 @@ begin
       end
     else if s <> '' then memINI.Lines.Add(s);
     end;
+  CloseFile(inifile);
+end;
+
+procedure TForm1.btnSaveClick(Sender: TObject);
+var inifile: textfile;
+  s: string;
+  i: integer;
+begin
+  AssignFile(inifile,inipath); // Open ini file.
+  ReWrite(inifile); // Make file editable.
+  WriteLn(inifile,memINI.Text);
+  WriteLn(inifile,'image='+pngpathrel);
+  s := 'palette=';
+  for i := 0 to 63 do s := s+TColorToStr(palarray[i])+','; // Convert palette to string.
+  Delete(s,Length(s),1); // Remove trailing comma.
+  WriteLn(inifile,s);
   CloseFile(inifile);
 end;
 

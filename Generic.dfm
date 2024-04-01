@@ -23,7 +23,7 @@ object Form1: TForm1
   end
   object pbWorkspace: TPaintBox
     Left = 0
-    Top = 88
+    Top = 70
     Width = 105
     Height = 105
     OnMouseDown = pbWorkspaceMouseDown
@@ -76,8 +76,17 @@ object Form1: TForm1
       '4x'
       '5x')
   end
-  object dlgLoad: TOpenDialog
+  object btnSave: TButton
     Left = 8
-    Top = 40
+    Top = 39
+    Width = 75
+    Height = 25
+    Caption = 'Save'
+    TabOrder = 3
+    OnClick = btnSaveClick
+  end
+  object dlgLoad: TOpenDialog
+    Left = 296
+    Top = 8
   end
 end
