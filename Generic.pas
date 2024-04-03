@@ -47,7 +47,7 @@ type
 var
   Form1: TForm1;
   pngloaded, drag, wheeldelay, hover: boolean;
-  pos_x, pos_y, prev_x, prev_y, scale: integer;
+  pos_x, pos_y, prev_x, prev_y, scale, palused: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
 
@@ -68,8 +68,9 @@ begin
   MatchWindow; // Set boundaries to match window.
   pbWorkspace.Width := Form1.ClientWidth-pbWorkspace.Left-320;
   pbWorkspace.Height := Form1.ClientHeight-pbWorkspace.Top;
-  UpdateDisplay;
   memINI.Left := Form1.ClientWidth-memINI.Width;
+  pbPalette.Left := Form1.ClientWidth-pbPalette.Width;
+  UpdateDisplay;
 end;
 
 procedure TForm1.UpdateDisplay;
@@ -129,32 +130,31 @@ begin
 end;
 
 procedure TForm1.CreatePal;
-var i, j, k, p: integer;
+var i, j, k: integer;
   col: TColor;
   match: boolean;
 begin
   for i := 0 to 63 do palarray[i] := 0; // Clear palette.
-  p := 0; // Start position in palette.
+  palused := 0; // Start position in palette.
   for i := 0 to PNG.Height-1 do
     for j := 0 to PNG.Width-1 do
       begin
       col := PNG.Pixels[j,i]; // Read colour value from pixel.
       match := false;
-      for k := 0 to p-1 do
+      for k := 0 to palused-1 do
         if col = palarray[k] then match := true; // Check if colour is already in palette.
       if not match then
         begin
-        palarray[p] := col; // Save new colour.
-        Inc(p);
+        palarray[palused] := col; // Save new colour.
+        Inc(palused);
         end;
-      if p = 64 then exit; // Finish now if palette is full.
+      if palused = 64 then exit; // Finish now if palette is full.
       end;
 end;
 
 procedure TForm1.LoadINI;
 var inifile: textfile;
   s, s2: string;
-  i: integer;
 begin
   AssignFile(inifile,inipath); // Open ini file.
   Reset(inifile);
@@ -169,8 +169,12 @@ begin
     else if AnsiPos('palette=',s) = 1 then
       begin
       s2 := Explode(s,'palette=',1);
-      for i := 0 to 63 do
-        palarray[i] := StrToTColor(Explode(s2,',',i)); // Write palette.
+      palused := 0;
+      while Explode(s2,',',palused) <> '' do
+        begin
+        palarray[palused] := StrToTColor(Explode(s2,',',palused)); // Write palette.
+        Inc(palused);
+        end;
       end
     else if s <> '' then memINI.Lines.Add(s);
     end;
@@ -187,7 +191,7 @@ begin
   WriteLn(inifile,memINI.Text);
   WriteLn(inifile,'image='+pngpathrel);
   s := 'palette=';
-  for i := 0 to 63 do s := s+TColorToStr(palarray[i])+','; // Convert palette to string.
+  for i := 0 to palused-1 do s := s+TColorToStr(palarray[i])+','; // Convert palette to string.
   Delete(s,Length(s),1); // Remove trailing comma.
   WriteLn(inifile,s);
   CloseFile(inifile);
