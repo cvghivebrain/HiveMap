@@ -12,6 +12,8 @@ object Form1: TForm1
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnMouseWheelDown = FormMouseWheelDown
+  OnMouseWheelUp = FormMouseWheelUp
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
@@ -27,6 +29,7 @@ object Form1: TForm1
     Width = 105
     Height = 105
     OnMouseDown = pbWorkspaceMouseDown
+    OnMouseEnter = pbWorkspaceMouseEnter
     OnMouseLeave = pbWorkspaceMouseLeave
     OnMouseMove = pbWorkspaceMouseMove
     OnMouseUp = pbWorkspaceMouseUp

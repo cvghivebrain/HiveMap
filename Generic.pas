@@ -29,6 +29,11 @@ type
       Y: Integer);
     procedure menuZoomChange(Sender: TObject);
     procedure btnSaveClick(Sender: TObject);
+    procedure FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure pbWorkspaceMouseEnter(Sender: TObject);
   private
     { Private declarations }
     procedure LoadPNG;
@@ -41,7 +46,7 @@ type
 
 var
   Form1: TForm1;
-  pngloaded, drag: boolean;
+  pngloaded, drag, wheeldelay, hover: boolean;
   pos_x, pos_y, prev_x, prev_y, scale: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
@@ -198,6 +203,30 @@ begin
   UpdateDisplay;
 end;
 
+procedure TForm1.FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if not hover then exit;
+  wheeldelay := not wheeldelay;
+  if wheeldelay then exit; // Do nothing every other wheel tick.
+  if scale = 1 then exit; // Minimum scale.
+  Dec(scale);
+  menuZoom.ItemIndex := scale-1;
+  UpdateDisplay;
+end;
+
+procedure TForm1.FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if not hover then exit;
+  wheeldelay := not wheeldelay;
+  if wheeldelay then exit; // Do nothing every other wheel tick.
+  if scale = 5 then exit; // Maximum scale.
+  Inc(scale);
+  menuZoom.ItemIndex := scale-1;
+  UpdateDisplay;
+end;
+
 procedure TForm1.pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
@@ -206,9 +235,15 @@ begin
   prev_y := Y;
 end;
 
+procedure TForm1.pbWorkspaceMouseEnter(Sender: TObject);
+begin
+  hover := true;
+end;
+
 procedure TForm1.pbWorkspaceMouseLeave(Sender: TObject);
 begin
   drag := false;
+  hover := false;
 end;
 
 procedure TForm1.pbWorkspaceMouseUp(Sender: TObject; Button: TMouseButton;
