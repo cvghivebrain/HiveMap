@@ -51,16 +51,21 @@ var
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
 
+const
+  max_scale: integer = 5;
+
 implementation
 
 {$R *.dfm}
 
 procedure TForm1.FormCreate(Sender: TObject);
+var i: integer;
 begin
   InitImage(Form1,imgMain); // Set image width & height to match form.
   pos_x := 0;
   pos_y := 0;
   scale := 1;
+  for i := 2 to max_scale do menuZoom.Items.Add(IntToStr(i)+'x'); // Populate zoom menu.
 end;
 
 procedure TForm1.FormResize(Sender: TObject);
@@ -214,6 +219,8 @@ begin
   wheeldelay := not wheeldelay;
   if wheeldelay then exit; // Do nothing every other wheel tick.
   if scale = 1 then exit; // Minimum scale.
+  pos_x := Trunc(pos_x*((scale-1)/scale)); // Adjust position for new scale factor.
+  pos_y := Trunc(pos_y*((scale-1)/scale));
   Dec(scale);
   menuZoom.ItemIndex := scale-1;
   UpdateDisplay;
@@ -225,7 +232,9 @@ begin
   if not hover then exit;
   wheeldelay := not wheeldelay;
   if wheeldelay then exit; // Do nothing every other wheel tick.
-  if scale = 5 then exit; // Maximum scale.
+  if scale = max_scale then exit; // Maximum scale.
+  pos_x := Trunc(pos_x*((scale+1)/scale)); // Adjust position for new scale factor.
+  pos_y := Trunc(pos_y*((scale+1)/scale));
   Inc(scale);
   menuZoom.ItemIndex := scale-1;
   UpdateDisplay;
@@ -260,6 +269,7 @@ procedure TForm1.pbWorkspaceMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var dx, dy: integer;
 begin
+  Form1.Caption := 'HiveMap topleft: '+IntToStr(pos_x)+' '+IntToStr(pos_y)+' mouse: '+IntToStr(X)+' '+IntToStr(Y);
   if not drag then exit; // Do nothing if not dragging.
   if not pngloaded then exit; // Do nothing if no PNG is loaded.
   dx := prev_x-X; // Get movement distance.

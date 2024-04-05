@@ -73,11 +73,7 @@ object Form1: TForm1
     Text = '1x'
     OnChange = menuZoomChange
     Items.Strings = (
-      '1x'
-      '2x'
-      '3x'
-      '4x'
-      '5x')
+      '1x')
   end
   object btnSave: TButton
     Left = 8
