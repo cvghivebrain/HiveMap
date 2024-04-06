@@ -40,6 +40,7 @@ type
     procedure LoadINI;
     procedure UpdateDisplay;
     procedure CreatePal;
+    procedure GetMousePos(x, y: integer);
   public
     { Public declarations }
   end;
@@ -47,7 +48,7 @@ type
 var
   Form1: TForm1;
   pngloaded, drag, wheeldelay, hover: boolean;
-  pos_x, pos_y, prev_x, prev_y, scale, palused: integer;
+  pos_x, pos_y, prev_x, prev_y, scale, palused, mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
 
@@ -219,9 +220,9 @@ begin
   wheeldelay := not wheeldelay;
   if wheeldelay then exit; // Do nothing every other wheel tick.
   if scale = 1 then exit; // Minimum scale.
-  pos_x := Trunc(pos_x*((scale-1)/scale)); // Adjust position for new scale factor.
-  pos_y := Trunc(pos_y*((scale-1)/scale));
   Dec(scale);
+  pos_x := Max((mouseimg_x*scale)-mousewin_x,0);
+  pos_y := Max((mouseimg_y*scale)-mousewin_y,0);
   menuZoom.ItemIndex := scale-1;
   UpdateDisplay;
 end;
@@ -233,10 +234,10 @@ begin
   wheeldelay := not wheeldelay;
   if wheeldelay then exit; // Do nothing every other wheel tick.
   if scale = max_scale then exit; // Maximum scale.
-  pos_x := Trunc(pos_x*((scale+1)/scale)); // Adjust position for new scale factor.
-  pos_y := Trunc(pos_y*((scale+1)/scale));
+  menuZoom.ItemIndex := scale;
   Inc(scale);
-  menuZoom.ItemIndex := scale-1;
+  pos_x := (mouseimg_x*scale)-mousewin_x;
+  pos_y := (mouseimg_y*scale)-mousewin_y;
   UpdateDisplay;
 end;
 
@@ -269,7 +270,7 @@ procedure TForm1.pbWorkspaceMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var dx, dy: integer;
 begin
-  Form1.Caption := 'HiveMap topleft: '+IntToStr(pos_x)+' '+IntToStr(pos_y)+' mouse: '+IntToStr(X)+' '+IntToStr(Y);
+  GetMousePos(X,Y);
   if not drag then exit; // Do nothing if not dragging.
   if not pngloaded then exit; // Do nothing if no PNG is loaded.
   dx := prev_x-X; // Get movement distance.
@@ -279,6 +280,14 @@ begin
   pos_x := Max(pos_x+dx,0); // New position, always 0 or higher.
   pos_y := Max(pos_y+dy,0);
   UpdateDisplay;
+end;
+
+procedure TForm1.GetMousePos(x, y: integer);
+begin
+  mouseimg_x := (pos_x+x) div scale; // Get mouse pointer position on image.
+  mouseimg_y := (pos_y+y) div scale;
+  mousewin_x := x; // Get mouse pointer position on workspace.
+  mousewin_y := y;
 end;
 
 end.
