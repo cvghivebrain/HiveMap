@@ -48,9 +48,12 @@ type
 var
   Form1: TForm1;
   pngloaded, drag, wheeldelay, hover: boolean;
-  pos_x, pos_y, prev_x, prev_y, scale, palused, mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
+  pos_x, pos_y, prev_x, prev_y, scale, palused, layer,
+    mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
+  spritenames: array of string;
+  spritetable: array of integer;
 
 const
   max_scale: integer = 5;
@@ -80,16 +83,28 @@ begin
 end;
 
 procedure TForm1.UpdateDisplay;
-var w, h, i: integer;
+var w, h, x, y, i, px, py: integer;
 begin
   FillScreen(40,44,52);
   if not pngloaded then exit; // Do nothing further if no PNG is loaded.
-  w := Min(PNG.Width-(pos_x div scale),pbWorkspace.Width div scale);
-  h := Min(PNG.Height-(pos_y div scale),pbWorkspace.Height div scale);
-  DrawPNG(pos_x div scale,pos_y div scale,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255);
+  px := pos_x div scale;
+  py := pos_y div scale;
+  w := Min(PNG.Width-px,pbWorkspace.Width div scale);
+  h := Min(PNG.Height-py,pbWorkspace.Height div scale);
+  DrawPNG(px,py,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255);
   for i := 0 to 63 do
     DrawRect(GetRValue(palarray[i]),GetGValue(palarray[i]),GetBValue(palarray[i]),255,
       pbPalette.Left+((i mod 16)*20),pbPalette.Top+((i div 16)*20),20,20); // Draw palette.
+  for i := 0 to Length(spritenames)-1 do
+    begin
+    x := ((spritetable[i*4]-spritetable[(i*4)+2]-px)*scale)+pbWorkspace.Left;
+    y := ((spritetable[(i*4)+1]-spritetable[(i*4)+3]-py)*scale)+pbWorkspace.Top;
+    w := spritetable[(i*4)+2]*2*scale;
+    h := spritetable[(i*4)+3]*2*scale;
+    DrawBox(255,255,255,255,x,y,w,h);
+    DrawLine(255,255,255,128,x+(w shr 1),y,x+(w shr 1),y+h);
+    DrawLine(255,255,255,128,x,y+(h shr 1),x+w,y+(h shr 1));
+    end;
   pic.Refresh;
 end;
 
@@ -98,6 +113,8 @@ begin
   if dlgLoad.Execute then
     begin
     memINI.Clear;
+    SetLength(spritetable,0);
+    SetLength(spritenames,0);
     if ExtractFileExt(dlgLoad.FileName) = '.png' then
       begin
       pngpath := dlgLoad.FileName;
@@ -243,10 +260,27 @@ end;
 
 procedure TForm1.pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
+var i: integer;
 begin
-  drag := true; // Start dragging whatever is under mouse.
-  prev_x := X;
-  prev_y := Y;
+  if Button = mbLeft then // Left click.
+    begin
+    layer := 0; // Assume the background was selected.
+    drag := true; // Start dragging whatever is under mouse.
+    prev_x := X;
+    prev_y := Y;
+    end
+  else if Button = mbRight then // Right click.
+    begin
+    i := Length(spritenames);
+    SetLength(spritenames,i+1);
+    spritenames[i] := 'sprite'+IntToStr(i); // Give sprite name "sprite#".
+    SetLength(spritetable,(i+1)*4);
+    spritetable[i*4] := mouseimg_x;
+    spritetable[(i*4)+1] := mouseimg_y;
+    spritetable[(i*4)+2] := 40;
+    spritetable[(i*4)+3] := 40;
+    UpdateDisplay;
+    end;
 end;
 
 procedure TForm1.pbWorkspaceMouseEnter(Sender: TObject);
@@ -263,6 +297,7 @@ end;
 procedure TForm1.pbWorkspaceMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
+  if Button <> mbLeft then exit; // Left mouse button only.
   drag := false;
 end;
 
@@ -277,8 +312,13 @@ begin
   dy := prev_y-Y;
   prev_x := X;
   prev_y := Y;
-  pos_x := Max(pos_x+dx,0); // New position, always 0 or higher.
-  pos_y := Max(pos_y+dy,0);
+  case layer of
+    0: // Background.
+      begin
+      pos_x := Max(pos_x+dx,0); // New position, always 0 or higher.
+      pos_y := Max(pos_y+dy,0);
+      end;
+  end;
   UpdateDisplay;
 end;
 
