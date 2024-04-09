@@ -48,7 +48,7 @@ type
 var
   Form1: TForm1;
   pngloaded, drag, wheeldelay, hover: boolean;
-  pos_x, pos_y, prev_x, prev_y, scale, palused, layer, spritecount,
+  pos_x, pos_y, prev_x, prev_y, scale, palused, layer, spritecount, spriteselect,
     mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
@@ -56,7 +56,8 @@ var
   spritetable: array of integer;
 
 const
-  max_scale: integer = 5;
+  max_scale: integer = 6;
+  corner_dim: integer = 6;
 
 implementation
 
@@ -84,8 +85,9 @@ end;
 
 procedure TForm1.UpdateDisplay;
 var w, h, x, y, i, px, py: integer;
+const bg: array[0..2] of byte = (40,44,52); // Background colour.
 begin
-  FillScreen(40,44,52);
+  FillScreen(bg[0],bg[1],bg[2]);
   if not pngloaded then exit; // Do nothing further if no PNG is loaded.
   px := pos_x div scale;
   py := pos_y div scale;
@@ -98,12 +100,19 @@ begin
     y := ((spritetable[(i*4)+1]-spritetable[(i*4)+3]-py)*scale)+pbWorkspace.Top;
     w := spritetable[(i*4)+2]*2*scale;
     h := spritetable[(i*4)+3]*2*scale;
-    DrawBox(255,255,255,255,x,y,w,h);
-    DrawLine(255,255,255,128,x+(w shr 1),y,x+(w shr 1),y+h);
+    DrawBox(255,255,255,255,x,y,w,h); // Draw box around sprite.
+    DrawLine(255,255,255,128,x+(w shr 1),y,x+(w shr 1),y+h); // Draw 2x2 grid.
     DrawLine(255,255,255,128,x,y+(h shr 1),x+w,y+(h shr 1));
+    if (layer = 1) and (i = spriteselect) then
+      begin
+      DrawRect(255,255,255,255,x,y,corner_dim,corner_dim); // Highlight corners of selected sprite.
+      DrawRect(255,255,255,255,x+w-corner_dim,y,corner_dim,corner_dim);
+      DrawRect(255,255,255,255,x,y+h-corner_dim,corner_dim,corner_dim);
+      DrawRect(255,255,255,255,x+w-corner_dim,y+h-corner_dim,corner_dim,corner_dim);
+      end;
     end;
-  DrawRect(40,44,52,255,0,0,Form1.ClientWidth,pbWorkspace.Top); // Clear top area.
-  DrawRect(40,44,52,255,pbWorkspace.Width,0,Form1.ClientWidth-pbWorkspace.Width,Form1.ClientHeight); // Clear right area.
+  DrawRect(bg[0],bg[1],bg[2],255,0,0,Form1.ClientWidth,pbWorkspace.Top); // Clear top area.
+  DrawRect(bg[0],bg[1],bg[2],255,pbWorkspace.Width,0,Form1.ClientWidth-pbWorkspace.Width,Form1.ClientHeight); // Clear right area.
   for i := 0 to 63 do
     DrawRect(GetRValue(palarray[i]),GetGValue(palarray[i]),GetBValue(palarray[i]),255,
       pbPalette.Left+((i mod 16)*20),pbPalette.Top+((i div 16)*20),20,20); // Draw palette.
@@ -286,6 +295,13 @@ begin
     drag := true; // Start dragging whatever is under mouse.
     prev_x := X;
     prev_y := Y;
+    for i := 0 to spritecount-1 do
+      if (Abs(mouseimg_x-spritetable[i*4]) < spritetable[(i*4)+2]) and (Abs(mouseimg_y-spritetable[(i*4)+1]) < spritetable[(i*4)+3]) then
+        begin
+        layer := 1; // Select sprite layer.
+        spriteselect := i;
+        break; // Stop checking sprites.
+        end;
     end
   else if Button = mbRight then // Right click.
     begin
@@ -298,8 +314,8 @@ begin
     spritetable[(i*4)+1] := mouseimg_y;
     spritetable[(i*4)+2] := 40;
     spritetable[(i*4)+3] := 40;
-    UpdateDisplay;
     end;
+  UpdateDisplay;
 end;
 
 procedure TForm1.pbWorkspaceMouseEnter(Sender: TObject);
