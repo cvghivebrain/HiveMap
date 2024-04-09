@@ -48,7 +48,7 @@ type
 var
   Form1: TForm1;
   pngloaded, drag, wheeldelay, hover: boolean;
-  pos_x, pos_y, prev_x, prev_y, scale, palused, layer,
+  pos_x, pos_y, prev_x, prev_y, scale, palused, layer, spritecount,
     mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
@@ -95,7 +95,7 @@ begin
   for i := 0 to 63 do
     DrawRect(GetRValue(palarray[i]),GetGValue(palarray[i]),GetBValue(palarray[i]),255,
       pbPalette.Left+((i mod 16)*20),pbPalette.Top+((i div 16)*20),20,20); // Draw palette.
-  for i := 0 to Length(spritenames)-1 do
+  for i := 0 to spritecount-1 do
     begin
     x := ((spritetable[i*4]-spritetable[(i*4)+2]-px)*scale)+pbWorkspace.Left;
     y := ((spritetable[(i*4)+1]-spritetable[(i*4)+3]-py)*scale)+pbWorkspace.Top;
@@ -115,6 +115,7 @@ begin
     memINI.Clear;
     SetLength(spritetable,0);
     SetLength(spritenames,0);
+    spritecount := 0;
     if ExtractFileExt(dlgLoad.FileName) = '.png' then
       begin
       pngpath := dlgLoad.FileName;
@@ -199,6 +200,18 @@ begin
         Inc(palused);
         end;
       end
+    else if AnsiPos('sprite=',s) = 1 then
+      begin
+      s2 := Explode(s,'sprite=',1);
+      SetLength(spritenames,Length(spritenames)+1); // Add sprite.
+      SetLength(spritetable,Length(spritetable)+4);
+      spritenames[spritecount] := Explode(s2,',',0); // Sprite name.
+      spritetable[spritecount*4] := StrToInt(Explode(s2,',',1)); // Sprite x pos.
+      spritetable[(spritecount*4)+1] := StrToInt(Explode(s2,',',2)); // Sprite y pos.
+      spritetable[(spritecount*4)+2] := StrToInt(Explode(s2,',',3)); // Sprite width.
+      spritetable[(spritecount*4)+3] := StrToInt(Explode(s2,',',4)); // Sprite height.
+      Inc(spritecount);
+      end
     else if s <> '' then memINI.Lines.Add(s);
     end;
   CloseFile(inifile);
@@ -217,6 +230,9 @@ begin
   for i := 0 to palused-1 do s := s+TColorToStr(palarray[i])+','; // Convert palette to string.
   Delete(s,Length(s),1); // Remove trailing comma.
   WriteLn(inifile,s);
+  s := 'sprite=';
+  for i := 0 to spritecount-1 do WriteLn(inifile,s+spritenames[i]+','+IntToStr(spritetable[i*4])+','+
+    IntToStr(spritetable[(i*4)+1])+','+IntToStr(spritetable[(i*4)+2])+','+IntToStr(spritetable[(i*4)+3]));
   CloseFile(inifile);
 end;
 
@@ -271,10 +287,11 @@ begin
     end
   else if Button = mbRight then // Right click.
     begin
-    i := Length(spritenames);
-    SetLength(spritenames,i+1);
+    i := spritecount;
+    Inc(spritecount); // Add sprite.
+    SetLength(spritenames,spritecount);
     spritenames[i] := 'sprite'+IntToStr(i); // Give sprite name "sprite#".
-    SetLength(spritetable,(i+1)*4);
+    SetLength(spritetable,spritecount*4);
     spritetable[i*4] := mouseimg_x;
     spritetable[(i*4)+1] := mouseimg_y;
     spritetable[(i*4)+2] := 40;
