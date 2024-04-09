@@ -92,10 +92,7 @@ begin
   w := Min(PNG.Width-px,pbWorkspace.Width div scale);
   h := Min(PNG.Height-py,pbWorkspace.Height div scale);
   DrawPNG(px,py,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255);
-  for i := 0 to 63 do
-    DrawRect(GetRValue(palarray[i]),GetGValue(palarray[i]),GetBValue(palarray[i]),255,
-      pbPalette.Left+((i mod 16)*20),pbPalette.Top+((i div 16)*20),20,20); // Draw palette.
-  for i := 0 to spritecount-1 do
+  for i := 0 to spritecount-1 do // Draw sprite boxes.
     begin
     x := ((spritetable[i*4]-spritetable[(i*4)+2]-px)*scale)+pbWorkspace.Left;
     y := ((spritetable[(i*4)+1]-spritetable[(i*4)+3]-py)*scale)+pbWorkspace.Top;
@@ -105,6 +102,11 @@ begin
     DrawLine(255,255,255,128,x+(w shr 1),y,x+(w shr 1),y+h);
     DrawLine(255,255,255,128,x,y+(h shr 1),x+w,y+(h shr 1));
     end;
+  DrawRect(40,44,52,255,0,0,Form1.ClientWidth,pbWorkspace.Top); // Clear top area.
+  DrawRect(40,44,52,255,pbWorkspace.Width,0,Form1.ClientWidth-pbWorkspace.Width,Form1.ClientHeight); // Clear right area.
+  for i := 0 to 63 do
+    DrawRect(GetRValue(palarray[i]),GetGValue(palarray[i]),GetBValue(palarray[i]),255,
+      pbPalette.Left+((i mod 16)*20),pbPalette.Top+((i div 16)*20),20,20); // Draw palette.
   pic.Refresh;
 end;
 
