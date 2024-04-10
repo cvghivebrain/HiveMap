@@ -338,13 +338,15 @@ end;
 
 procedure TForm1.pbWorkspaceMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
-var dx, dy: integer;
+var dx, dy, dx2, dy2: integer;
 begin
   GetMousePos(X,Y);
   if not drag then exit; // Do nothing if not dragging.
   if not pngloaded then exit; // Do nothing if no PNG is loaded.
   dx := prev_x-X; // Get movement distance.
   dy := prev_y-Y;
+  dx2 := (prev_x div scale)-(X div scale); // Get movement distance with scale.
+  dy2 := (prev_y div scale)-(Y div scale);
   prev_x := X;
   prev_y := Y;
   case layer of
@@ -352,6 +354,11 @@ begin
       begin
       pos_x := Max(pos_x+dx,0); // New position, always 0 or higher.
       pos_y := Max(pos_y+dy,0);
+      end;
+    1: // Sprite.
+      begin
+      spritetable[spriteselect*4] := spritetable[spriteselect*4]-dx2;
+      spritetable[(spriteselect*4)+1] := spritetable[(spriteselect*4)+1]-dy2;
       end;
   end;
   UpdateDisplay;
