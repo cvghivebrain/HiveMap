@@ -84,20 +84,18 @@ begin
 end;
 
 procedure TForm1.UpdateDisplay;
-var w, h, x, y, i, px, py: integer;
+var w, h, x, y, i: integer;
 const bg: array[0..2] of byte = (40,44,52); // Background colour.
 begin
   FillScreen(bg[0],bg[1],bg[2]);
   if not pngloaded then exit; // Do nothing further if no PNG is loaded.
-  px := pos_x div scale;
-  py := pos_y div scale;
-  w := Min(PNG.Width-px,pbWorkspace.Width div scale);
-  h := Min(PNG.Height-py,pbWorkspace.Height div scale);
-  DrawPNG(px,py,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255);
+  w := Min(PNG.Width-pos_x,pbWorkspace.Width div scale);
+  h := Min(PNG.Height-pos_y,pbWorkspace.Height div scale);
+  DrawPNG(pos_x,pos_y,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255);
   for i := 0 to spritecount-1 do // Draw sprite boxes.
     begin
-    x := ((spritetable[i*4]-spritetable[(i*4)+2]-px)*scale)+pbWorkspace.Left;
-    y := ((spritetable[(i*4)+1]-spritetable[(i*4)+3]-py)*scale)+pbWorkspace.Top;
+    x := ((spritetable[i*4]-spritetable[(i*4)+2]-pos_x)*scale)+pbWorkspace.Left;
+    y := ((spritetable[(i*4)+1]-spritetable[(i*4)+3]-pos_y)*scale)+pbWorkspace.Top;
     w := spritetable[(i*4)+2]*2*scale;
     h := spritetable[(i*4)+3]*2*scale;
     DrawBox(255,255,255,255,x,y,w,h); // Draw box around sprite.
@@ -248,12 +246,8 @@ begin
 end;
 
 procedure TForm1.menuZoomChange(Sender: TObject);
-var newscale: integer;
 begin
-  newscale := StrToInt(Explode(menuZoom.Items[menuZoom.ItemIndex],'x',0));
-  pos_x := Trunc(pos_x*(newscale/scale)); // Adjust position for new scale factor.
-  pos_y := Trunc(pos_y*(newscale/scale));
-  scale := newscale;
+  scale := menuZoom.ItemIndex+1;
   UpdateDisplay;
 end;
 
@@ -265,8 +259,8 @@ begin
   if wheeldelay then exit; // Do nothing every other wheel tick.
   if scale = 1 then exit; // Minimum scale.
   Dec(scale);
-  pos_x := Max((mouseimg_x*scale)-mousewin_x,0);
-  pos_y := Max((mouseimg_y*scale)-mousewin_y,0);
+  pos_x := Max(mouseimg_x-(mousewin_x div scale),0);
+  pos_y := Max(mouseimg_y-(mousewin_y div scale),0);
   menuZoom.ItemIndex := scale-1;
   UpdateDisplay;
 end;
@@ -280,8 +274,8 @@ begin
   if scale = max_scale then exit; // Maximum scale.
   menuZoom.ItemIndex := scale;
   Inc(scale);
-  pos_x := (mouseimg_x*scale)-mousewin_x;
-  pos_y := (mouseimg_y*scale)-mousewin_y;
+  pos_x := mouseimg_x-(mousewin_x div scale);
+  pos_y := mouseimg_y-(mousewin_y div scale);
   UpdateDisplay;
 end;
 
@@ -338,15 +332,13 @@ end;
 
 procedure TForm1.pbWorkspaceMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
-var dx, dy, dx2, dy2: integer;
+var dx, dy: integer;
 begin
   GetMousePos(X,Y);
   if not drag then exit; // Do nothing if not dragging.
   if not pngloaded then exit; // Do nothing if no PNG is loaded.
-  dx := prev_x-X; // Get movement distance.
-  dy := prev_y-Y;
-  dx2 := (prev_x div scale)-(X div scale); // Get movement distance with scale.
-  dy2 := (prev_y div scale)-(Y div scale);
+  dx := (prev_x div scale)-(X div scale); // Get movement distance.
+  dy := (prev_y div scale)-(Y div scale);
   prev_x := X;
   prev_y := Y;
   case layer of
@@ -357,8 +349,8 @@ begin
       end;
     1: // Sprite.
       begin
-      spritetable[spriteselect*4] := spritetable[spriteselect*4]-dx2;
-      spritetable[(spriteselect*4)+1] := spritetable[(spriteselect*4)+1]-dy2;
+      spritetable[spriteselect*4] := spritetable[spriteselect*4]-dx;
+      spritetable[(spriteselect*4)+1] := spritetable[(spriteselect*4)+1]-dy;
       end;
   end;
   UpdateDisplay;
@@ -366,8 +358,8 @@ end;
 
 procedure TForm1.GetMousePos(x, y: integer);
 begin
-  mouseimg_x := (pos_x+x) div scale; // Get mouse pointer position on image.
-  mouseimg_y := (pos_y+y) div scale;
+  mouseimg_x := pos_x+(x div scale); // Get mouse pointer position on image.
+  mouseimg_y := pos_y+(y div scale);
   mousewin_x := x; // Get mouse pointer position on workspace.
   mousewin_y := y;
 end;
