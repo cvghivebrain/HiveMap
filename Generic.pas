@@ -49,7 +49,7 @@ var
   Form1: TForm1;
   pngloaded, drag, wheeldelay, hover: boolean;
   pos_x, pos_y, prev_x, prev_y, scale, palused, layer, spritecount, spriteselect,
-    mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
+    spriteside, mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
   spritenames: array of string;
@@ -58,6 +58,10 @@ var
 const
   max_scale: integer = 6;
   corner_dim: integer = 6;
+  side_top: integer = 1;
+  side_bottom: integer = 2;
+  side_left: integer = 4;
+  side_right: integer = 8;
 
 implementation
 
@@ -281,8 +285,9 @@ end;
 
 procedure TForm1.pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
-var i: integer;
+var i, edgew: integer;
 begin
+  edgew := corner_dim+4; // Set thickness of clickable edges.
   if Button = mbLeft then // Left click.
     begin
     layer := 0; // Assume the background was selected.
@@ -293,6 +298,11 @@ begin
       if (Abs(mouseimg_x-spritetable[i*4]) < spritetable[(i*4)+2]) and (Abs(mouseimg_y-spritetable[(i*4)+1]) < spritetable[(i*4)+3]) then
         begin
         layer := 1; // Select sprite layer.
+        spriteside := 0; // Assume edge of sprite wasn't clicked.
+        if mouseimg_x < spritetable[i*4]-spritetable[(i*4)+2]+edgew then spriteside := side_left;
+        if mouseimg_x > spritetable[i*4]+spritetable[(i*4)+2]-edgew then spriteside := side_right;
+        if mouseimg_y < spritetable[(i*4)+1]-spritetable[(i*4)+3]+edgew then spriteside := spriteside+side_top;
+        if mouseimg_y > spritetable[(i*4)+1]+spritetable[(i*4)+3]-edgew then spriteside := spriteside+side_bottom;
         spriteselect := i;
         break; // Stop checking sprites.
         end;
@@ -349,8 +359,19 @@ begin
       end;
     1: // Sprite.
       begin
-      spritetable[spriteselect*4] := spritetable[spriteselect*4]-dx;
-      spritetable[(spriteselect*4)+1] := spritetable[(spriteselect*4)+1]-dy;
+      if spriteside = 0 then
+        begin
+        spritetable[spriteselect*4] := spritetable[spriteselect*4]-dx; // Move sprite box.
+        spritetable[(spriteselect*4)+1] := spritetable[(spriteselect*4)+1]-dy;
+        end;
+      if spriteside and side_top <> 0 then
+        spritetable[(spriteselect*4)+3] := Max(spritetable[(spriteselect*4)+3]+dy,16); // Resize sprite box.
+      if spriteside and side_bottom <> 0 then
+        spritetable[(spriteselect*4)+3] := Max(spritetable[(spriteselect*4)+3]-dy,16);
+      if spriteside and side_left <> 0 then
+        spritetable[(spriteselect*4)+2] := Max(spritetable[(spriteselect*4)+2]+dx,16);
+      if spriteside and side_right <> 0 then
+        spritetable[(spriteselect*4)+2] := Max(spritetable[(spriteselect*4)+2]-dx,16);
       end;
   end;
   UpdateDisplay;
