@@ -84,6 +84,31 @@ object Form1: TForm1
     TabOrder = 3
     OnClick = btnSaveClick
   end
+  object editSprite: TLabeledEdit
+    Left = 969
+    Top = 288
+    Width = 320
+    Height = 26
+    EditLabel.Width = 27
+    EditLabel.Height = 13
+    EditLabel.Caption = 'Sprite'
+    EditLabel.Color = clWhite
+    EditLabel.Font.Charset = DEFAULT_CHARSET
+    EditLabel.Font.Color = clWhite
+    EditLabel.Font.Height = -11
+    EditLabel.Font.Name = 'MS Sans Serif'
+    EditLabel.Font.Style = []
+    EditLabel.ParentColor = False
+    EditLabel.ParentFont = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Courier New'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 4
+    OnChange = editSpriteChange
+  end
   object dlgLoad: TOpenDialog
     Left = 296
     Top = 8

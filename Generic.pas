@@ -17,6 +17,7 @@ type
     menuZoom: TComboBox;
     pbPalette: TPaintBox;
     btnSave: TButton;
+    editSprite: TLabeledEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
@@ -34,6 +35,7 @@ type
     procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
     procedure pbWorkspaceMouseEnter(Sender: TObject);
+    procedure editSpriteChange(Sender: TObject);
   private
     { Private declarations }
     procedure LoadPNG;
@@ -74,6 +76,7 @@ begin
   pos_x := 0;
   pos_y := 0;
   scale := 1;
+  spriteselect := -1;
   for i := 2 to max_scale do menuZoom.Items.Add(IntToStr(i)+'x'); // Populate zoom menu.
 end;
 
@@ -84,6 +87,7 @@ begin
   pbWorkspace.Height := Form1.ClientHeight-pbWorkspace.Top;
   memINI.Left := Form1.ClientWidth-memINI.Width;
   pbPalette.Left := Form1.ClientWidth-pbPalette.Width;
+  editSprite.Left := Form1.ClientWidth-editSprite.Width;
   UpdateDisplay;
 end;
 
@@ -291,6 +295,7 @@ begin
   if Button = mbLeft then // Left click.
     begin
     layer := 0; // Assume the background was selected.
+    spriteselect := -1; // Assume no sprite selected.
     drag := true; // Start dragging whatever is under mouse.
     prev_x := X;
     prev_y := Y;
@@ -304,6 +309,8 @@ begin
         if mouseimg_y < spritetable[(i*4)+1]-spritetable[(i*4)+3]+edgew then spriteside := spriteside+side_top;
         if mouseimg_y > spritetable[(i*4)+1]+spritetable[(i*4)+3]-edgew then spriteside := spriteside+side_bottom;
         spriteselect := i;
+        editSprite.Text := spritenames[i];
+        editSprite.EditLabel.Caption := 'Sprite '+IntToStr(i+1)+'/'+IntToStr(spritecount);
         break; // Stop checking sprites.
         end;
     end
@@ -383,6 +390,12 @@ begin
   mouseimg_y := pos_y+(y div scale);
   mousewin_x := x; // Get mouse pointer position on workspace.
   mousewin_y := y;
+end;
+
+procedure TForm1.editSpriteChange(Sender: TObject);
+begin
+  if spriteselect = -1 then exit; // Do nothing if no sprite is selected.
+  spritenames[spriteselect] := editSprite.Text; // Update name.
 end;
 
 end.
