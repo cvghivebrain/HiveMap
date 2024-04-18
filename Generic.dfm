@@ -6,7 +6,7 @@ object Form1: TForm1
   ClientWidth = 1289
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWindowText
+  Font.Color = clWhite
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
@@ -109,8 +109,30 @@ object Form1: TForm1
     TabOrder = 4
     OnChange = editSpriteChange
   end
+  object editGrid: TEdit
+    Left = 176
+    Top = 8
+    Width = 121
+    Height = 21
+    TabOrder = 5
+    Text = '40'
+  end
+  object chkGrid: TCheckBox
+    Left = 176
+    Top = 35
+    Width = 97
+    Height = 17
+    Caption = 'Show Grid'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 6
+  end
   object dlgLoad: TOpenDialog
-    Left = 296
+    Left = 480
     Top = 8
   end
 end

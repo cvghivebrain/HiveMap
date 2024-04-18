@@ -18,6 +18,8 @@ type
     pbPalette: TPaintBox;
     btnSave: TButton;
     editSprite: TLabeledEdit;
+    editGrid: TEdit;
+    chkGrid: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
@@ -51,7 +53,7 @@ var
   Form1: TForm1;
   pngloaded, drag, wheeldelay, hover: boolean;
   pos_x, pos_y, prev_x, prev_y, scale, palused, layer, spritecount, spriteselect,
-    spriteside, mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
+    spriteside, gridsize, mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
   spritenames: array of string;
@@ -77,6 +79,7 @@ begin
   pos_y := 0;
   scale := 1;
   spriteselect := -1;
+  gridsize := Solve(editGrid.Text);
   for i := 2 to max_scale do menuZoom.Items.Add(IntToStr(i)+'x'); // Populate zoom menu.
 end;
 
@@ -99,7 +102,22 @@ begin
   if not pngloaded then exit; // Do nothing further if no PNG is loaded.
   w := Min(PNG.Width-pos_x,pbWorkspace.Width div scale);
   h := Min(PNG.Height-pos_y,pbWorkspace.Height div scale);
-  DrawPNG(pos_x,pos_y,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255);
+  DrawPNG(pos_x,pos_y,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255); // Draw image.
+  if chkGrid.Checked then
+    begin
+    i := (gridsize-(pos_x mod gridsize))*scale;
+    while i < pbWorkspace.Width do
+      begin
+      DrawLine(128,128,128,200,i+pbWorkspace.Left,pbWorkspace.Top,i+pbWorkspace.Left,pbWorkspace.Height+pbWorkspace.Top); // Draw vertical grid line.
+      i := i+(gridsize*scale);
+      end;
+    i := (gridsize-(pos_y mod gridsize))*scale;
+    while i < pbWorkspace.Height do
+      begin
+      DrawLine(128,128,128,200,pbWorkspace.Left,i+pbWorkspace.Top,pbWorkspace.Width+pbWorkspace.Left,i+pbWorkspace.Top); // Draw horizontal grid line.
+      i := i+(gridsize*scale);
+      end;
+    end;
   for i := 0 to spritecount-1 do // Draw sprite boxes.
     begin
     x := ((spritetable[i*4]-spritetable[(i*4)+2]-pos_x)*scale)+pbWorkspace.Left;
@@ -123,41 +141,50 @@ begin
     DrawRect(GetRValue(palarray[i]),GetGValue(palarray[i]),GetBValue(palarray[i]),255,
       pbPalette.Left+((i mod 16)*20),pbPalette.Top+((i div 16)*20),20,20); // Draw palette.
   pic.Refresh;
+  if spriteselect = -1 then
+    begin
+    editSprite.Text := '';
+    editSprite.EditLabel.Caption := 'Sprite';
+    end
+  else
+    begin
+    editSprite.Text := spritenames[spriteselect]; // Show name of selected sprite.
+    editSprite.EditLabel.Caption := 'Sprite '+IntToStr(spriteselect+1)+'/'+IntToStr(spritecount); // Show sprite number.
+    end;
 end;
 
 procedure TForm1.btnLoadClick(Sender: TObject);
 begin
-  if dlgLoad.Execute then
+  if not dlgLoad.Execute then exit;
+  memINI.Clear;
+  SetLength(spritetable,0);
+  SetLength(spritenames,0);
+  spritecount := 0;
+  spriteselect := -1;
+  if ExtractFileExt(dlgLoad.FileName) = '.png' then
     begin
-    memINI.Clear;
-    SetLength(spritetable,0);
-    SetLength(spritenames,0);
-    spritecount := 0;
-    if ExtractFileExt(dlgLoad.FileName) = '.png' then
+    pngpath := dlgLoad.FileName;
+    pngpathrel := ExtractFileName(pngpath);
+    LoadPNG;
+    CreatePal;
+    inipath := ChangeFileExt(pngpath,'.ini');
+    if FileExists(inipath) then LoadINI;
+    UpdateDisplay;
+    end
+  else if ExtractFileExt(dlgLoad.FileName) = '.ini' then
+    begin
+    pngpath := '';
+    inipath := dlgLoad.FileName;
+    LoadINI;
+    if pngpath = '' then
       begin
-      pngpath := dlgLoad.FileName;
+      pngpath := ChangeFileExt(inipath,'.png');
       pngpathrel := ExtractFileName(pngpath);
-      LoadPNG;
-      CreatePal;
-      inipath := ChangeFileExt(pngpath,'.ini');
-      if FileExists(inipath) then LoadINI;
-      UpdateDisplay;
-      end
-    else if ExtractFileExt(dlgLoad.FileName) = '.ini' then
-      begin
-      pngpath := '';
-      inipath := dlgLoad.FileName;
-      LoadINI;
-      if pngpath = '' then
-        begin
-        pngpath := ChangeFileExt(inipath,'.png');
-        pngpathrel := ExtractFileName(pngpath);
-        end;
-      LoadPNG;
-      UpdateDisplay;
-      end
-    else ShowMessage('Unknown file type.');
-    end;
+      end;
+    LoadPNG;
+    UpdateDisplay;
+    end
+  else ShowMessage('Unknown file type.');
 end;
 
 procedure TForm1.LoadPNG;
@@ -229,6 +256,11 @@ begin
       spritetable[(spritecount*4)+3] := StrToInt(Explode(s2,',',4)); // Sprite height.
       Inc(spritecount);
       end
+    else if AnsiPos('grid=',s) = 1 then
+      begin
+      editGrid.Text := Explode(s,'grid=',1);
+      gridsize := Solve(editGrid.Text);
+      end
     else if s <> '' then memINI.Lines.Add(s);
     end;
   CloseFile(inifile);
@@ -246,10 +278,11 @@ begin
   s := 'palette=';
   for i := 0 to palused-1 do s := s+TColorToStr(palarray[i])+','; // Convert palette to string.
   Delete(s,Length(s),1); // Remove trailing comma.
-  WriteLn(inifile,s);
+  WriteLn(inifile,s); // Write palette.
   s := 'sprite=';
   for i := 0 to spritecount-1 do WriteLn(inifile,s+spritenames[i]+','+IntToStr(spritetable[i*4])+','+
-    IntToStr(spritetable[(i*4)+1])+','+IntToStr(spritetable[(i*4)+2])+','+IntToStr(spritetable[(i*4)+3]));
+    IntToStr(spritetable[(i*4)+1])+','+IntToStr(spritetable[(i*4)+2])+','+IntToStr(spritetable[(i*4)+3])); // Write sprite table.
+  WriteLn(inifile,'grid='+editGrid.Text); // Write grid size.
   CloseFile(inifile);
 end;
 
@@ -309,8 +342,6 @@ begin
         if mouseimg_y < spritetable[(i*4)+1]-spritetable[(i*4)+3]+edgew then spriteside := spriteside+side_top;
         if mouseimg_y > spritetable[(i*4)+1]+spritetable[(i*4)+3]-edgew then spriteside := spriteside+side_bottom;
         spriteselect := i;
-        editSprite.Text := spritenames[i];
-        editSprite.EditLabel.Caption := 'Sprite '+IntToStr(i+1)+'/'+IntToStr(spritecount);
         break; // Stop checking sprites.
         end;
     end
