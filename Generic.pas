@@ -38,6 +38,8 @@ type
       MousePos: TPoint; var Handled: Boolean);
     procedure pbWorkspaceMouseEnter(Sender: TObject);
     procedure editSpriteChange(Sender: TObject);
+    procedure chkGridClick(Sender: TObject);
+    procedure editGridChange(Sender: TObject);
   private
     { Private declarations }
     procedure LoadPNG;
@@ -79,7 +81,7 @@ begin
   pos_y := 0;
   scale := 1;
   spriteselect := -1;
-  gridsize := Solve(editGrid.Text);
+  gridsize := GetGrid(editGrid.Text);
   for i := 2 to max_scale do menuZoom.Items.Add(IntToStr(i)+'x'); // Populate zoom menu.
 end;
 
@@ -108,13 +110,13 @@ begin
     i := (gridsize-(pos_x mod gridsize))*scale;
     while i < pbWorkspace.Width do
       begin
-      DrawLine(128,128,128,200,i+pbWorkspace.Left,pbWorkspace.Top,i+pbWorkspace.Left,pbWorkspace.Height+pbWorkspace.Top); // Draw vertical grid line.
+      DrawLine(255,128,255,128,i+pbWorkspace.Left,pbWorkspace.Top,i+pbWorkspace.Left,pbWorkspace.Height+pbWorkspace.Top); // Draw vertical grid line.
       i := i+(gridsize*scale);
       end;
     i := (gridsize-(pos_y mod gridsize))*scale;
     while i < pbWorkspace.Height do
       begin
-      DrawLine(128,128,128,200,pbWorkspace.Left,i+pbWorkspace.Top,pbWorkspace.Width+pbWorkspace.Left,i+pbWorkspace.Top); // Draw horizontal grid line.
+      DrawLine(255,128,255,128,pbWorkspace.Left,i+pbWorkspace.Top,pbWorkspace.Width+pbWorkspace.Left,i+pbWorkspace.Top); // Draw horizontal grid line.
       i := i+(gridsize*scale);
       end;
     end;
@@ -259,7 +261,7 @@ begin
     else if AnsiPos('grid=',s) = 1 then
       begin
       editGrid.Text := Explode(s,'grid=',1);
-      gridsize := Solve(editGrid.Text);
+      gridsize := GetGrid(editGrid.Text);
       end
     else if s <> '' then memINI.Lines.Add(s);
     end;
@@ -427,6 +429,17 @@ procedure TForm1.editSpriteChange(Sender: TObject);
 begin
   if spriteselect = -1 then exit; // Do nothing if no sprite is selected.
   spritenames[spriteselect] := editSprite.Text; // Update name.
+end;
+
+procedure TForm1.chkGridClick(Sender: TObject);
+begin
+  UpdateDisplay;
+end;
+
+procedure TForm1.editGridChange(Sender: TObject);
+begin
+  gridsize := GetGrid(editGrid.Text); // Read grid size from text box (minimum 8).
+  UpdateDisplay;
 end;
 
 end.

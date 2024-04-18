@@ -164,12 +164,7 @@ begin
       end;
     result := DoSum(s); // Final sum after brackets are gone.
   except
-    {$IFDEF GUI_APP}
-    ShowMessage(scopy+' is not a valid expression.');
-    {$ELSE}
-    WriteLn(scopy+' is not a valid expression.');
-    {$ENDIF}
-    result := 0;
+    result := -1;
   end;
 end;
 

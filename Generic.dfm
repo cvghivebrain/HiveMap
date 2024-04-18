@@ -114,8 +114,15 @@ object Form1: TForm1
     Top = 8
     Width = 121
     Height = 21
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 5
     Text = '40'
+    OnChange = editGridChange
   end
   object chkGrid: TCheckBox
     Left = 176
@@ -123,13 +130,16 @@ object Form1: TForm1
     Width = 97
     Height = 17
     Caption = 'Show Grid'
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
+    Font.Color = clBlack
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
+    ParentColor = False
     ParentFont = False
     TabOrder = 6
+    OnClick = chkGridClick
   end
   object dlgLoad: TOpenDialog
     Left = 480

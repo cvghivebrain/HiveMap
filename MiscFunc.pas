@@ -1,10 +1,11 @@
 unit MiscFunc;
 
 interface
-uses Graphics, StrUtils, Sysutils, Windows;
+uses Graphics, StrUtils, Sysutils, Windows, SolveFunc, Math;
 
 function StrToTColor(str: string): TColor;
 function TColorToStr(col: TColor): string;
+function GetGrid(str: string): integer;
 
 implementation
 
@@ -23,6 +24,15 @@ end;
 function TColorToStr(col: TColor): string;
 begin
   result := IntToHex(col and $FF,2)+IntToHex((col shr 8) and $FF,2)+IntToHex((col shr 16) and $FF,2);
+end;
+
+{ Convert string to grid size. }
+
+function GetGrid(str: string): integer;
+var g: integer;
+begin
+  g := Solve(str); // Convert string to integer (-1 if invalid).
+  result := Max(g,8); // Minimum 8.
 end;
 
 end.
