@@ -20,6 +20,7 @@ type
     editSprite: TLabeledEdit;
     editGrid: TEdit;
     chkGrid: TCheckBox;
+    chkSnap: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
@@ -354,8 +355,16 @@ begin
     SetLength(spritenames,spritecount);
     spritenames[i] := 'sprite'+IntToStr(i); // Give sprite name "sprite#".
     SetLength(spritetable,spritecount*4);
-    spritetable[i*4] := mouseimg_x;
-    spritetable[(i*4)+1] := mouseimg_y;
+    if chkSnap.Checked then
+      begin
+      spritetable[i*4] := Nearest(mouseimg_x,gridsize);
+      spritetable[(i*4)+1] := Nearest(mouseimg_y,gridsize);
+      end
+    else
+      begin
+      spritetable[i*4] := mouseimg_x;
+      spritetable[(i*4)+1] := mouseimg_y;
+      end;
     spritetable[(i*4)+2] := 40;
     spritetable[(i*4)+3] := 40;
     end;
@@ -378,6 +387,12 @@ procedure TForm1.pbWorkspaceMouseUp(Sender: TObject; Button: TMouseButton;
 begin
   if Button <> mbLeft then exit; // Left mouse button only.
   drag := false;
+  if (layer = 1) and (spriteside = 0) and chkSnap.Checked then
+    begin
+    spritetable[spriteselect*4] := Nearest(spritetable[spriteselect*4],gridsize); // Snap to grid.
+    spritetable[(spriteselect*4)+1] := Nearest(spritetable[(spriteselect*4)+1],gridsize);
+    UpdateDisplay;
+    end;
 end;
 
 procedure TForm1.pbWorkspaceMouseMove(Sender: TObject; Shift: TShiftState; X,

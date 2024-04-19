@@ -6,6 +6,7 @@ uses Graphics, StrUtils, Sysutils, Windows, SolveFunc, Math;
 function StrToTColor(str: string): TColor;
 function TColorToStr(col: TColor): string;
 function GetGrid(str: string): integer;
+function Nearest(num, interval: integer): integer;
 
 implementation
 
@@ -33,6 +34,13 @@ var g: integer;
 begin
   g := Solve(str); // Convert string to integer (-1 if invalid).
   result := Max(g,8); // Minimum 8.
+end;
+
+{ Round integer to nearest interval. }
+
+function Nearest(num, interval: integer): integer;
+begin
+  result := Round(num/interval)*interval;
 end;
 
 end.

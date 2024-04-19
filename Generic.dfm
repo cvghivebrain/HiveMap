@@ -141,6 +141,23 @@ object Form1: TForm1
     TabOrder = 6
     OnClick = chkGridClick
   end
+  object chkSnap: TCheckBox
+    Left = 256
+    Top = 35
+    Width = 97
+    Height = 17
+    Caption = 'Snap to Grid'
+    Color = clBtnFace
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+    TabOrder = 7
+    OnClick = chkGridClick
+  end
   object dlgLoad: TOpenDialog
     Left = 480
     Top = 8
