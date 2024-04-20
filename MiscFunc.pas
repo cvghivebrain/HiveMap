@@ -1,11 +1,12 @@
 unit MiscFunc;
 
 interface
-uses Graphics, StrUtils, Sysutils, Windows, SolveFunc, Math;
+uses Graphics, StrUtils, Sysutils, Windows, SolveFunc, Math, ExplodeFunc;
 
 function StrToTColor(str: string): TColor;
 function TColorToStr(col: TColor): string;
-function GetGrid(str: string): integer;
+function GetGridW(str: string): integer;
+function GetGridH(str: string): integer;
 function Nearest(num, interval: integer): integer;
 
 implementation
@@ -29,10 +30,19 @@ end;
 
 { Convert string to grid size. }
 
-function GetGrid(str: string): integer;
+function GetGridW(str: string): integer;
 var g: integer;
 begin
-  g := Solve(str); // Convert string to integer (-1 if invalid).
+  if AnsiPos(',',str) <> 0 then g := Solve(Explode(str,',',0)) // Convert string to integer (-1 if invalid).
+  else g := Solve(str);
+  result := Max(g,8); // Minimum 8.
+end;
+
+function GetGridH(str: string): integer;
+var g: integer;
+begin
+  if AnsiPos(',',str) <> 0 then g := Solve(Explode(str,',',1)) // Convert string to integer (-1 if invalid).
+  else g := Solve(str);
   result := Max(g,8); // Minimum 8.
 end;
 

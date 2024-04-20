@@ -56,7 +56,7 @@ var
   Form1: TForm1;
   pngloaded, drag, wheeldelay, hover: boolean;
   pos_x, pos_y, prev_x, prev_y, scale, palused, layer, spritecount, spriteselect,
-    spriteside, gridsize, mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
+    spriteside, grid_w, grid_h, mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
   spritenames: array of string;
@@ -82,7 +82,8 @@ begin
   pos_y := 0;
   scale := 1; // Default zoom.
   spriteselect := -1; // No sprite selected.
-  gridsize := GetGrid(editGrid.Text);
+  grid_w := GetGridW(editGrid.Text); // Read grid size from text box (minimum 8).
+  grid_h := GetGridH(editGrid.Text);
   for i := 2 to max_scale do menuZoom.Items.Add(IntToStr(i)+'x'); // Populate zoom menu.
 end;
 
@@ -108,17 +109,17 @@ begin
   DrawPNG(pos_x,pos_y,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255); // Draw image.
   if chkGrid.Checked then
     begin
-    i := (gridsize-(pos_x mod gridsize))*scale;
+    i := (grid_w-(pos_x mod grid_w))*scale;
     while i < pbWorkspace.Width do
       begin
       DrawLine(255,128,255,128,i+pbWorkspace.Left,pbWorkspace.Top,i+pbWorkspace.Left,pbWorkspace.Height+pbWorkspace.Top); // Draw vertical grid line.
-      i := i+(gridsize*scale);
+      i := i+(grid_w*scale);
       end;
-    i := (gridsize-(pos_y mod gridsize))*scale;
+    i := (grid_h-(pos_y mod grid_h))*scale;
     while i < pbWorkspace.Height do
       begin
       DrawLine(255,128,255,128,pbWorkspace.Left,i+pbWorkspace.Top,pbWorkspace.Width+pbWorkspace.Left,i+pbWorkspace.Top); // Draw horizontal grid line.
-      i := i+(gridsize*scale);
+      i := i+(grid_h*scale);
       end;
     end;
   for i := 0 to spritecount-1 do // Draw sprite boxes.
@@ -262,7 +263,8 @@ begin
     else if AnsiPos('grid=',s) = 1 then
       begin
       editGrid.Text := Explode(s,'grid=',1);
-      gridsize := GetGrid(editGrid.Text);
+      grid_w := GetGridW(editGrid.Text); // Read grid size from text box (minimum 8).
+      grid_h := GetGridH(editGrid.Text);
       end
     else if s <> '' then memINI.Lines.Add(s);
     end;
@@ -357,8 +359,8 @@ begin
     SetLength(spritetable,spritecount*4);
     if chkSnap.Checked then
       begin
-      spritetable[i*4] := Nearest(mouseimg_x,gridsize);
-      spritetable[(i*4)+1] := Nearest(mouseimg_y,gridsize);
+      spritetable[i*4] := Nearest(mouseimg_x,grid_w);
+      spritetable[(i*4)+1] := Nearest(mouseimg_y,grid_h);
       end
     else
       begin
@@ -391,8 +393,8 @@ begin
   drag := false;
   if (layer = 1) and (spriteside = 0) and chkSnap.Checked then
     begin
-    spritetable[spriteselect*4] := Nearest(spritetable[spriteselect*4],gridsize); // Snap to grid.
-    spritetable[(spriteselect*4)+1] := Nearest(spritetable[(spriteselect*4)+1],gridsize);
+    spritetable[spriteselect*4] := Nearest(spritetable[spriteselect*4],grid_w); // Snap to grid.
+    spritetable[(spriteselect*4)+1] := Nearest(spritetable[(spriteselect*4)+1],grid_h);
     UpdateDisplay;
     end;
 end;
@@ -455,7 +457,8 @@ end;
 
 procedure TForm1.editGridChange(Sender: TObject);
 begin
-  gridsize := GetGrid(editGrid.Text); // Read grid size from text box (minimum 8).
+  grid_w := GetGridW(editGrid.Text); // Read grid size from text box (minimum 8).
+  grid_h := GetGridH(editGrid.Text);
   UpdateDisplay;
 end;
 
