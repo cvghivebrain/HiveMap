@@ -2,20 +2,18 @@ object Form1: TForm1
   Left = 192
   Top = 124
   Caption = 'HiveMap'
-  ClientHeight = 636
-  ClientWidth = 1289
+  ClientHeight = 635
+  ClientWidth = 1285
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
   OnMouseWheelDown = FormMouseWheelDown
   OnMouseWheelUp = FormMouseWheelUp
   OnResize = FormResize
-  PixelsPerInch = 96
   TextHeight = 13
   object imgMain: TImage
     Left = 0
@@ -107,6 +105,7 @@ object Form1: TForm1
     Font.Style = []
     ParentFont = False
     TabOrder = 4
+    Text = ''
     OnChange = editSpriteChange
   end
   object editGrid: TEdit

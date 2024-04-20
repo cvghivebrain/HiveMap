@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StrUtils, ExtCtrls, StdCtrls, ScanLineFunc, pngimage, CRCFunc,
-  ExplodeFunc, FileFunc, SolveFunc, Math, MiscFunc;
+  ExplodeFunc, FileFunc, SolveFunc, Math, MiscFunc, Vcl.Mask;
 
 type
   TForm1 = class(TForm)
@@ -78,10 +78,10 @@ procedure TForm1.FormCreate(Sender: TObject);
 var i: integer;
 begin
   InitImage(Form1,imgMain); // Set image width & height to match form.
-  pos_x := 0;
+  pos_x := 0; // Image position.
   pos_y := 0;
-  scale := 1;
-  spriteselect := -1;
+  scale := 1; // Default zoom.
+  spriteselect := -1; // No sprite selected.
   gridsize := GetGrid(editGrid.Text);
   for i := 2 to max_scale do menuZoom.Items.Add(IntToStr(i)+'x'); // Populate zoom menu.
 end;
@@ -367,6 +367,8 @@ begin
       end;
     spritetable[(i*4)+2] := 40;
     spritetable[(i*4)+3] := 40;
+    spriteselect := i; // Select new sprite.
+    layer := 1;
     end;
   UpdateDisplay;
 end;
