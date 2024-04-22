@@ -21,6 +21,8 @@ type
     editGrid: TEdit;
     chkGrid: TCheckBox;
     chkSnap: TCheckBox;
+    lblGrid: TLabel;
+    lblSnap: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);

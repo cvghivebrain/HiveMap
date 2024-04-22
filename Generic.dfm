@@ -2,11 +2,11 @@ object Form1: TForm1
   Left = 192
   Top = 124
   Caption = 'HiveMap'
-  ClientHeight = 635
-  ClientWidth = 1285
+  ClientHeight = 634
+  ClientWidth = 1281
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWhite
+  Font.Color = clBlack
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
@@ -37,6 +37,32 @@ object Form1: TForm1
     Top = 184
     Width = 320
     Height = 80
+  end
+  object lblGrid: TLabel
+    Left = 196
+    Top = 35
+    Width = 49
+    Height = 13
+    Caption = 'Show Grid'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+  end
+  object lblSnap: TLabel
+    Left = 196
+    Top = 54
+    Width = 59
+    Height = 13
+    Caption = 'Snap to Grid'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
   end
   object btnLoad: TButton
     Left = 8
@@ -128,10 +154,9 @@ object Form1: TForm1
     Top = 35
     Width = 97
     Height = 17
-    Caption = 'Show Grid'
     Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
+    Font.Color = clWhite
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
@@ -141,14 +166,13 @@ object Form1: TForm1
     OnClick = chkGridClick
   end
   object chkSnap: TCheckBox
-    Left = 256
-    Top = 35
+    Left = 176
+    Top = 51
     Width = 97
     Height = 17
-    Caption = 'Snap to Grid'
     Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
+    Font.Color = clWhite
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
