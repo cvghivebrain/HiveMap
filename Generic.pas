@@ -58,11 +58,13 @@ var
   Form1: TForm1;
   pngloaded, drag, wheeldelay, hover: boolean;
   pos_x, pos_y, prev_x, prev_y, scale, palused, layer, spritecount, spriteselect,
-    spriteside, grid_w, grid_h, mouseimg_x, mouseimg_y, mousewin_x, mousewin_y: integer;
+    spriteside, grid_w, grid_h, mouseimg_x, mouseimg_y, mousewin_x, mousewin_y,
+    piececount, pieceselect: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
   spritenames: array of string;
   spritetable: array of integer;
+  piecetable: array of integer;
 
 const
   max_scale: integer = 6;
@@ -71,6 +73,8 @@ const
   side_bottom: integer = 2;
   side_left: integer = 4;
   side_right: integer = 8;
+  piecewidth: array[0..15] of integer = (8,8,8,8,16,16,16,16,24,24,24,24,32,32,32,32);
+  pieceheight: array[0..15] of integer = (8,16,24,32,8,16,24,32,8,16,24,32,8,16,24,32);
 
 implementation
 
@@ -84,6 +88,7 @@ begin
   pos_y := 0;
   scale := 1; // Default zoom.
   spriteselect := -1; // No sprite selected.
+  pieceselect := -1; // No piece selected.
   grid_w := GetGridW(editGrid.Text); // Read grid size from text box (minimum 8).
   grid_h := GetGridH(editGrid.Text);
   for i := 2 to max_scale do menuZoom.Items.Add(IntToStr(i)+'x'); // Populate zoom menu.
@@ -101,8 +106,11 @@ begin
 end;
 
 procedure TForm1.UpdateDisplay;
-var w, h, x, y, i: integer;
+var w, h, x, y, i, p: integer;
 const bg: array[0..2] of byte = (40,44,52); // Background colour.
+  sc: array[0..2] of byte = (255,255,255); // Sprite colour.
+  pc: array[0..11] of byte = (255,0,0, 255,255,0, 0,255,0, 0,0,255); // Piece colours.
+  gc: array[0..2] of byte = (255,128,255); // Grid colour.
 begin
   FillScreen(bg[0],bg[1],bg[2]);
   if not pngloaded then exit; // Do nothing further if no PNG is loaded.
@@ -114,13 +122,13 @@ begin
     i := (grid_w-(pos_x mod grid_w))*scale;
     while i < pbWorkspace.Width do
       begin
-      DrawLine(255,128,255,128,i+pbWorkspace.Left,pbWorkspace.Top,i+pbWorkspace.Left,pbWorkspace.Height+pbWorkspace.Top); // Draw vertical grid line.
+      DrawLine(gc[0],gc[1],gc[2],128,i+pbWorkspace.Left,pbWorkspace.Top,i+pbWorkspace.Left,pbWorkspace.Height+pbWorkspace.Top); // Draw vertical grid line.
       i := i+(grid_w*scale);
       end;
     i := (grid_h-(pos_y mod grid_h))*scale;
     while i < pbWorkspace.Height do
       begin
-      DrawLine(255,128,255,128,pbWorkspace.Left,i+pbWorkspace.Top,pbWorkspace.Width+pbWorkspace.Left,i+pbWorkspace.Top); // Draw horizontal grid line.
+      DrawLine(gc[0],gc[1],gc[2],128,pbWorkspace.Left,i+pbWorkspace.Top,pbWorkspace.Width+pbWorkspace.Left,i+pbWorkspace.Top); // Draw horizontal grid line.
       i := i+(grid_h*scale);
       end;
     end;
@@ -130,16 +138,25 @@ begin
     y := ((spritetable[(i*4)+1]-spritetable[(i*4)+3]-pos_y)*scale)+pbWorkspace.Top;
     w := spritetable[(i*4)+2]*2*scale;
     h := spritetable[(i*4)+3]*2*scale;
-    DrawBox(255,255,255,255,x,y,w,h); // Draw box around sprite.
-    DrawLine(255,255,255,128,x+(w shr 1),y,x+(w shr 1),y+h); // Draw 2x2 grid.
-    DrawLine(255,255,255,128,x,y+(h shr 1),x+w,y+(h shr 1));
+    DrawBox(sc[0],sc[1],sc[2],255,x,y,w,h); // Draw box around sprite.
+    DrawLine(sc[0],sc[1],sc[2],128,x+(w shr 1),y,x+(w shr 1),y+h); // Draw 2x2 grid.
+    DrawLine(sc[0],sc[1],sc[2],128,x,y+(h shr 1),x+w,y+(h shr 1));
     if (layer = 1) and (i = spriteselect) then
       begin
-      DrawRect(255,255,255,255,x,y,corner_dim,corner_dim); // Highlight corners of selected sprite.
-      DrawRect(255,255,255,255,x+w-corner_dim,y,corner_dim,corner_dim);
-      DrawRect(255,255,255,255,x,y+h-corner_dim,corner_dim,corner_dim);
-      DrawRect(255,255,255,255,x+w-corner_dim,y+h-corner_dim,corner_dim,corner_dim);
+      DrawRect(sc[0],sc[1],sc[2],255,x,y,corner_dim,corner_dim); // Highlight corners of selected sprite.
+      DrawRect(sc[0],sc[1],sc[2],255,x+w-corner_dim,y,corner_dim,corner_dim);
+      DrawRect(sc[0],sc[1],sc[2],255,x,y+h-corner_dim,corner_dim,corner_dim);
+      DrawRect(sc[0],sc[1],sc[2],255,x+w-corner_dim,y+h-corner_dim,corner_dim,corner_dim);
       end;
+    end;
+  for i := 0 to piececount-1 do // Draw piece boxes.
+    begin
+    x := ((piecetable[i*4]-pos_x)*scale)+pbWorkspace.Left;
+    y := ((piecetable[(i*4)+1]-pos_y)*scale)+pbWorkspace.Top;
+    w := piecewidth[piecetable[(i*4)+3]]*scale;
+    h := pieceheight[piecetable[(i*4)+3]]*scale;
+    p := piecetable[(i*4)+2]*3;
+    DrawBoxFill(pc[p],pc[p+1],pc[p+2],255,pc[p],pc[p+1],pc[p+2],92,x,y,w,h); // Draw box around piece.
     end;
   DrawRect(bg[0],bg[1],bg[2],255,0,0,Form1.ClientWidth,pbWorkspace.Top); // Clear top area.
   DrawRect(bg[0],bg[1],bg[2],255,pbWorkspace.Width,0,Form1.ClientWidth-pbWorkspace.Width,Form1.ClientHeight); // Clear right area.
@@ -165,8 +182,11 @@ begin
   memINI.Clear;
   SetLength(spritetable,0);
   SetLength(spritenames,0);
+  SetLength(piecetable,0);
   spritecount := 0;
   spriteselect := -1;
+  piececount := 0;
+  pieceselect := -1;
   if ExtractFileExt(dlgLoad.FileName) = '.png' then
     begin
     pngpath := dlgLoad.FileName;
@@ -262,6 +282,16 @@ begin
       spritetable[(spritecount*4)+3] := StrToInt(Explode(s2,',',4)); // Sprite height.
       Inc(spritecount);
       end
+    else if AnsiPos('piece=',s) = 1 then
+      begin
+      s2 := Explode(s,'piece=',1);
+      SetLength(piecetable,Length(piecetable)+4); // Add piece.
+      piecetable[piececount*4] := StrToInt(Explode(s2,',',0)); // Piece x pos.
+      piecetable[(piececount*4)+1] := StrToInt(Explode(s2,',',1)); // Piece y pos.
+      piecetable[(piececount*4)+2] := StrToInt(Explode(s2,',',2)); // Piece palette.
+      piecetable[(piececount*4)+3] := StrToInt(Explode(s2,',',3)); // Piece size.
+      Inc(piececount);
+      end
     else if AnsiPos('grid=',s) = 1 then
       begin
       editGrid.Text := Explode(s,'grid=',1);
@@ -289,6 +319,9 @@ begin
   s := 'sprite=';
   for i := 0 to spritecount-1 do WriteLn(inifile,s+spritenames[i]+','+IntToStr(spritetable[i*4])+','+
     IntToStr(spritetable[(i*4)+1])+','+IntToStr(spritetable[(i*4)+2])+','+IntToStr(spritetable[(i*4)+3])); // Write sprite table.
+  s := 'piece=';
+  for i := 0 to piececount-1 do WriteLn(inifile,s+IntToStr(piecetable[i*4])+','+
+    IntToStr(piecetable[(i*4)+1])+','+IntToStr(piecetable[(i*4)+2])+','+IntToStr(piecetable[(i*4)+3])); // Write piece table.
   WriteLn(inifile,'grid='+editGrid.Text); // Write grid size.
   CloseFile(inifile);
 end;
