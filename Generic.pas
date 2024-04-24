@@ -477,6 +477,11 @@ begin
       if spriteside and side_right <> 0 then
         spritetable[(spriteselect*4)+2] := Max(spritetable[(spriteselect*4)+2]-dx,16);
       end;
+    2: // Piece.
+      begin
+      piecetable[pieceselect*4] := piecetable[pieceselect*4]-dx; // Move piece box.
+      piecetable[(pieceselect*4)+1] := piecetable[(pieceselect*4)+1]-dy;
+      end;
   end;
   UpdateDisplay;
 end;
