@@ -157,6 +157,8 @@ begin
     h := pieceheight[piecetable[(i*4)+3]]*scale;
     p := piecetable[(i*4)+2]*3;
     DrawBoxFill(pc[p],pc[p+1],pc[p+2],255,pc[p],pc[p+1],pc[p+2],92,x,y,w,h); // Draw box around piece.
+    if (layer = 2) and (i = pieceselect) then
+      DrawBox(pc[p],pc[p+1],pc[p+2],255,x-2,y-2,w+4,h+4); // Draw second box around selected piece.
     end;
   DrawRect(bg[0],bg[1],bg[2],255,0,0,Form1.ClientWidth,pbWorkspace.Top); // Clear top area.
   DrawRect(bg[0],bg[1],bg[2],255,pbWorkspace.Width,0,Form1.ClientWidth-pbWorkspace.Width,Form1.ClientHeight); // Clear right area.
@@ -369,6 +371,7 @@ begin
     begin
     layer := 0; // Assume the background was selected.
     spriteselect := -1; // Assume no sprite selected.
+    pieceselect := -1; // Assume no piece selected.
     drag := true; // Start dragging whatever is under mouse.
     prev_x := X;
     prev_y := Y;
@@ -377,12 +380,19 @@ begin
         begin
         layer := 1; // Select sprite layer.
         spriteside := 0; // Assume edge of sprite wasn't clicked.
-        if mouseimg_x < spritetable[i*4]-spritetable[(i*4)+2]+edgew then spriteside := side_left;
-        if mouseimg_x > spritetable[i*4]+spritetable[(i*4)+2]-edgew then spriteside := side_right;
-        if mouseimg_y < spritetable[(i*4)+1]-spritetable[(i*4)+3]+edgew then spriteside := spriteside+side_top;
-        if mouseimg_y > spritetable[(i*4)+1]+spritetable[(i*4)+3]-edgew then spriteside := spriteside+side_bottom;
+        if mouseimg_x <= spritetable[i*4]-spritetable[(i*4)+2]+edgew then spriteside := side_left;
+        if mouseimg_x >= spritetable[i*4]+spritetable[(i*4)+2]-edgew then spriteside := side_right;
+        if mouseimg_y <= spritetable[(i*4)+1]-spritetable[(i*4)+3]+edgew then spriteside := spriteside+side_top;
+        if mouseimg_y >= spritetable[(i*4)+1]+spritetable[(i*4)+3]-edgew then spriteside := spriteside+side_bottom;
         spriteselect := i;
         break; // Stop checking sprites.
+        end;
+    for i := 0 to piececount-1 do
+      if InRect(mouseimg_x,mouseimg_y,piecetable[i*4],piecetable[(i*4)+1],piecewidth[piecetable[(i*4)+3]],pieceheight[piecetable[(i*4)+3]]) then
+        begin
+        layer := 2; // Select piece layer.
+        pieceselect := i;
+        break; // Stop checking pieces.
         end;
     end
   else if Button = mbRight then // Right click.

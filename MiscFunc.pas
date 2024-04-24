@@ -8,6 +8,7 @@ function TColorToStr(col: TColor): string;
 function GetGridW(str: string): integer;
 function GetGridH(str: string): integer;
 function Nearest(num, interval: integer): integer;
+function InRect(x, y, x2, y2, w, h: integer): boolean;
 
 implementation
 
@@ -51,6 +52,14 @@ end;
 function Nearest(num, interval: integer): integer;
 begin
   result := Round(num/interval)*interval;
+end;
+
+{ Check if a point is inside a rectangle. }
+
+function InRect(x, y, x2, y2, w, h: integer): boolean;
+begin
+  if (x >= x2) and (x < x2+w) and (y >= y2) and (y < y2+h) then result := true
+  else result := false;
 end;
 
 end.
