@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 192
   Top = 124
   Caption = 'HiveMap'
-  ClientHeight = 633
-  ClientWidth = 1277
+  ClientHeight = 630
+  ClientWidth = 1265
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -34,9 +34,10 @@ object Form1: TForm1
   end
   object pbPalette: TPaintBox
     Left = 969
-    Top = 184
+    Top = 497
     Width = 320
     Height = 80
+    OnMouseDown = pbPaletteMouseDown
   end
   object lblGrid: TLabel
     Left = 196
@@ -63,6 +64,25 @@ object Form1: TForm1
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
+  end
+  object lblPiece: TLabel
+    Left = 969
+    Top = 280
+    Width = 27
+    Height = 13
+    Caption = 'Piece'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+  end
+  object pbPiece: TPaintBox
+    Left = 969
+    Top = 299
+    Width = 192
+    Height = 192
   end
   object btnLoad: TButton
     Left = 8
@@ -110,7 +130,7 @@ object Form1: TForm1
   end
   object editSprite: TLabeledEdit
     Left = 969
-    Top = 288
+    Top = 208
     Width = 320
     Height = 26
     EditLabel.Width = 27

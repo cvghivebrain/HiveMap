@@ -23,6 +23,8 @@ type
     chkSnap: TCheckBox;
     lblGrid: TLabel;
     lblSnap: TLabel;
+    lblPiece: TLabel;
+    pbPiece: TPaintBox;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
@@ -43,6 +45,8 @@ type
     procedure editSpriteChange(Sender: TObject);
     procedure chkGridClick(Sender: TObject);
     procedure editGridChange(Sender: TObject);
+    procedure pbPaletteMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
     procedure LoadPNG;
@@ -100,8 +104,10 @@ begin
   pbWorkspace.Width := Form1.ClientWidth-pbWorkspace.Left-320;
   pbWorkspace.Height := Form1.ClientHeight-pbWorkspace.Top;
   memINI.Left := Form1.ClientWidth-memINI.Width;
-  pbPalette.Left := Form1.ClientWidth-pbPalette.Width;
-  editSprite.Left := Form1.ClientWidth-editSprite.Width;
+  pbPalette.Left := memINI.Left;
+  editSprite.Left := memINI.Left;
+  lblPiece.Left := memINI.Left;
+  pbPiece.Left := memINI.Left;
   UpdateDisplay;
 end;
 
@@ -165,7 +171,6 @@ begin
   for i := 0 to 63 do
     DrawRect(GetRValue(palarray[i]),GetGValue(palarray[i]),GetBValue(palarray[i]),255,
       pbPalette.Left+((i mod 16)*20),pbPalette.Top+((i div 16)*20),20,20); // Draw palette.
-  pic.Refresh;
   if spriteselect = -1 then
     begin
     editSprite.Text := '';
@@ -176,6 +181,24 @@ begin
     editSprite.Text := spritenames[spriteselect]; // Show name of selected sprite.
     editSprite.EditLabel.Caption := 'Sprite '+IntToStr(spriteselect+1)+'/'+IntToStr(spritecount); // Show sprite number.
     end;
+  if pieceselect = -1 then lblPiece.Caption := 'Piece'
+  else
+    begin
+    lblPiece.Caption := 'Piece '+IntToStr(pieceselect+1)+'/'+IntToStr(piececount); // Show piece number.
+    i := pbPiece.Top;
+    while i < pbPiece.Top+pbPiece.Height do // Draw empty pixels.
+      begin
+      DrawLine(64,64,64,255,pbPiece.Left,i,pbPiece.Left+pbPiece.Width,i);
+      DrawLine(128,128,128,255,pbPiece.Left,i+1,pbPiece.Left+pbPiece.Width,i+1);
+      i := i+2;
+      end;
+    for i := 0 to 4 do // Draw grid.
+      DrawLine(255,255,255,255,pbPiece.Left,pbPiece.Top+(i*(pbPiece.Height div 4)),pbPiece.Left+pbPiece.Width+1,pbPiece.Top+(i*(pbPiece.Height div 4)));
+    for i := 0 to 4 do
+      DrawLine(255,255,255,255,pbPiece.Left+(i*(pbPiece.Width div 4)),pbPiece.Top,pbPiece.Left+(i*(pbPiece.Width div 4)),pbPiece.Top+pbPiece.Height);
+    DrawBox2(255,255,255,255,pbPalette.Left,pbPalette.Top+(piecetable[(pieceselect*4)+2]*(pbPalette.Height div 4)),pbPalette.Width,pbPalette.Height div 4,2); // Highlight palette line.
+    end;
+  pic.Refresh;
 end;
 
 procedure TForm1.btnLoadClick(Sender: TObject);
@@ -360,6 +383,16 @@ begin
   pos_x := mouseimg_x-(mousewin_x div scale);
   pos_y := mouseimg_y-(mousewin_y div scale);
   UpdateDisplay;
+end;
+
+procedure TForm1.pbPaletteMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if pieceselect <> -1 then
+    begin
+    piecetable[(pieceselect*4)+2] := Y div (pbPalette.Height div 4); // Change palette of piece.
+    UpdateDisplay;
+    end;
 end;
 
 procedure TForm1.pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
