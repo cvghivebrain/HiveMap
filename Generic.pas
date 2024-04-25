@@ -145,8 +145,7 @@ begin
     w := spritetable[(i*4)+2]*2*scale;
     h := spritetable[(i*4)+3]*2*scale;
     DrawBox(sc[0],sc[1],sc[2],255,x,y,w,h); // Draw box around sprite.
-    DrawLine(sc[0],sc[1],sc[2],128,x+(w shr 1),y,x+(w shr 1),y+h); // Draw 2x2 grid.
-    DrawLine(sc[0],sc[1],sc[2],128,x,y+(h shr 1),x+w,y+(h shr 1));
+    DrawGrid(sc[0],sc[1],sc[2],128,x,y,w,h,2,2,false); // Draw 2x2 grid.
     if (layer = 1) and (i = spriteselect) then
       begin
       DrawRect(sc[0],sc[1],sc[2],255,x,y,corner_dim,corner_dim); // Highlight corners of selected sprite.
@@ -192,10 +191,7 @@ begin
       DrawLine(128,128,128,255,pbPiece.Left,i+1,pbPiece.Left+pbPiece.Width,i+1);
       i := i+2;
       end;
-    for i := 0 to 4 do // Draw grid.
-      DrawLine(255,255,255,255,pbPiece.Left,pbPiece.Top+(i*(pbPiece.Height div 4)),pbPiece.Left+pbPiece.Width+1,pbPiece.Top+(i*(pbPiece.Height div 4)));
-    for i := 0 to 4 do
-      DrawLine(255,255,255,255,pbPiece.Left+(i*(pbPiece.Width div 4)),pbPiece.Top,pbPiece.Left+(i*(pbPiece.Width div 4)),pbPiece.Top+pbPiece.Height);
+    DrawGrid(255,255,255,255,pbPiece.Left,pbPiece.Top,pbPiece.Width,pbPiece.Height,4,4,true);
     DrawBox2(255,255,255,255,pbPalette.Left,pbPalette.Top+(piecetable[(pieceselect*4)+2]*(pbPalette.Height div 4)),pbPalette.Width,pbPalette.Height div 4,2); // Highlight palette line.
     end;
   pic.Refresh;
