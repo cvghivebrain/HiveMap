@@ -25,6 +25,7 @@ procedure DrawLine(r, g, b, a: byte; x1, y1, x2, y2: integer);
 procedure DrawTriangleFlat(r, g, b, a: byte; xtop, ytop, xleft, xright, ybtm, trim: integer);
 procedure DrawTriangle(r, g, b, a: byte; x1, y1, x2, y2, x3, y3: integer);
 procedure DrawGrid(r, g, b, a: byte; x, y, w, h, cx, cy: integer; outer: boolean);
+procedure DrawRectStriped(r1, g1, b1, a1, r2, g2, b2, a2: byte; x, y, w, h, t1, t2: integer);
 
 var
   pic: TImage;
@@ -429,6 +430,21 @@ begin
   for i := 0 to cy-1 do
     for j := 1 to cx-1 do
       DrawLine(r,g,b,a,x+(j*cw),y+(i*ch)+1,x+(j*cw),y+(i*ch)+ch); // Draw vertical lines.
+end;
+
+{ Draw a rectangle with horizontal stripes. }
+
+procedure DrawRectStriped(r1, g1, b1, a1, r2, g2, b2, a2: byte; x, y, w, h, t1, t2: integer);
+var i: integer;
+begin
+  i := 0;
+  while i < h do
+    begin
+    DrawRect(r1,g1,b1,a1,x,y+i,w,Min(t1,h-i)); // Draw even stripe.
+    i := i+t1;
+    DrawRect(r2,g2,b2,a2,x,y+i,w,Min(t2,h-i)); // Draw odd stripe.
+    i := i+t2;
+    end;
 end;
 
 end.

@@ -184,13 +184,7 @@ begin
   else
     begin
     lblPiece.Caption := 'Piece '+IntToStr(pieceselect+1)+'/'+IntToStr(piececount); // Show piece number.
-    i := pbPiece.Top;
-    while i < pbPiece.Top+pbPiece.Height do // Draw empty pixels.
-      begin
-      DrawLine(64,64,64,255,pbPiece.Left,i,pbPiece.Left+pbPiece.Width,i);
-      DrawLine(128,128,128,255,pbPiece.Left,i+1,pbPiece.Left+pbPiece.Width,i+1);
-      i := i+2;
-      end;
+    DrawRectStriped(64,64,64,255,128,128,128,255,pbPiece.Left,pbPiece.Top,pbPiece.Width,pbPiece.Height,1,1);
     DrawGrid(255,255,255,255,pbPiece.Left,pbPiece.Top,pbPiece.Width,pbPiece.Height,4,4,true);
     DrawBox2(255,255,255,255,pbPalette.Left,pbPalette.Top+(piecetable[(pieceselect*4)+2]*(pbPalette.Height div 4)),pbPalette.Width,pbPalette.Height div 4,2); // Highlight palette line.
     end;
