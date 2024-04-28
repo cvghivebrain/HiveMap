@@ -47,6 +47,8 @@ type
     procedure editGridChange(Sender: TObject);
     procedure pbPaletteMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure pbPieceMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
     procedure LoadPNG;
@@ -189,16 +191,16 @@ begin
     DrawRectStriped(64,64,64,255,128,128,128,255,pbPiece.Left,pbPiece.Top,pbPiece.Width,pbPiece.Height,1,1); // Draw empty pixels.
     w := pbPiece.Width div 32;
     h := pbPiece.Height div 32;
-    x := pbPiece.Left;
-    y := pbPiece.Top;
     for i := 0 to 31 do
       for j := 0 to 31 do
         begin
         col := PNG.Pixels[piecetable[pieceselect*4]+j,piecetable[(pieceselect*4)+1]+i]; // Read pixel.
         if MatchPal(col,piecetable[(pieceselect*4)+2]) then
-          DrawRect(GetRValue(col),GetGValue(col),GetBValue(col),255,x+(j*w),y+(i*h),w,h); // Draw pixel if in palette.
+          DrawRect(GetRValue(col),GetGValue(col),GetBValue(col),255,pbPiece.Left+(j*w),pbPiece.Top+(i*h),w,h); // Draw pixel if in palette.
         end;
     DrawGrid(255,255,255,255,pbPiece.Left,pbPiece.Top,pbPiece.Width,pbPiece.Height,4,4,true);
+    p := piecetable[(pieceselect*4)+2]*3;
+    DrawBox2(pc[p],pc[p+1],pc[p+2],255,pbPiece.Left,pbPiece.Top,(piecewidth[piecetable[(pieceselect*4)+3]]*w)+1,(pieceheight[piecetable[(pieceselect*4)+3]]*h)+1,2); // Highlight piece.
     DrawBox2(255,255,255,255,pbPalette.Left,pbPalette.Top+(piecetable[(pieceselect*4)+2]*(pbPalette.Height div 4)),pbPalette.Width,pbPalette.Height div 4,2); // Highlight palette line.
     end;
   pic.Refresh;
@@ -407,6 +409,16 @@ begin
   if pieceselect <> -1 then
     begin
     piecetable[(pieceselect*4)+2] := Y div (pbPalette.Height div 4); // Change palette of piece.
+    UpdateDisplay;
+    end;
+end;
+
+procedure TForm1.pbPieceMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if pieceselect <> -1 then
+    begin
+    piecetable[(pieceselect*4)+3] := (Y div (pbPiece.Height div 4))+((X div (pbPiece.Width div 4))*4); // Change size of piece.
     UpdateDisplay;
     end;
 end;

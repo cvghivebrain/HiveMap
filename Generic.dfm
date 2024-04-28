@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 192
   Top = 124
   Caption = 'HiveMap'
-  ClientHeight = 630
-  ClientWidth = 1265
+  ClientHeight = 628
+  ClientWidth = 1257
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -83,6 +83,7 @@ object Form1: TForm1
     Top = 299
     Width = 192
     Height = 192
+    OnMouseDown = pbPieceMouseDown
   end
   object btnLoad: TButton
     Left = 8
