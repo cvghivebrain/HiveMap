@@ -54,6 +54,7 @@ type
     procedure UpdateDisplay;
     procedure CreatePal;
     procedure GetMousePos(x, y: integer);
+    function MatchPal(col: TColor; pal: integer): boolean;
   public
     { Public declarations }
   end;
@@ -112,7 +113,8 @@ begin
 end;
 
 procedure TForm1.UpdateDisplay;
-var w, h, x, y, i, p: integer;
+var w, h, x, y, i, j, p: integer;
+  col: TColor;
 const bg: array[0..2] of byte = (40,44,52); // Background colour.
   sc: array[0..2] of byte = (255,255,255); // Sprite colour.
   pc: array[0..11] of byte = (255,0,0, 255,255,0, 0,255,0, 0,0,255); // Piece colours.
@@ -184,11 +186,35 @@ begin
   else
     begin
     lblPiece.Caption := 'Piece '+IntToStr(pieceselect+1)+'/'+IntToStr(piececount); // Show piece number.
-    DrawRectStriped(64,64,64,255,128,128,128,255,pbPiece.Left,pbPiece.Top,pbPiece.Width,pbPiece.Height,1,1);
+    DrawRectStriped(64,64,64,255,128,128,128,255,pbPiece.Left,pbPiece.Top,pbPiece.Width,pbPiece.Height,1,1); // Draw empty pixels.
+    w := pbPiece.Width div 32;
+    h := pbPiece.Height div 32;
+    x := pbPiece.Left;
+    y := pbPiece.Top;
+    for i := 0 to 31 do
+      for j := 0 to 31 do
+        begin
+        col := PNG.Pixels[piecetable[pieceselect*4]+j,piecetable[(pieceselect*4)+1]+i]; // Read pixel.
+        if MatchPal(col,piecetable[(pieceselect*4)+2]) then
+          DrawRect(GetRValue(col),GetGValue(col),GetBValue(col),255,x+(j*w),y+(i*h),w,h); // Draw pixel if in palette.
+        end;
     DrawGrid(255,255,255,255,pbPiece.Left,pbPiece.Top,pbPiece.Width,pbPiece.Height,4,4,true);
     DrawBox2(255,255,255,255,pbPalette.Left,pbPalette.Top+(piecetable[(pieceselect*4)+2]*(pbPalette.Height div 4)),pbPalette.Width,pbPalette.Height div 4,2); // Highlight palette line.
     end;
   pic.Refresh;
+end;
+
+function TForm1.MatchPal(col: TColor; pal: integer): boolean;
+var i: integer;
+begin
+  result := false; // Assume no match.
+  if col = palarray[pal*16] then exit; // Colour matches transparent index.
+  for i := 1 to 15 do
+    if col = palarray[(pal*16)+i] then
+      begin
+      result := true; // Match found.
+      break; // Stop searching.
+      end;
 end;
 
 procedure TForm1.btnLoadClick(Sender: TObject);
