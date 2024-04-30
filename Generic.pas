@@ -425,11 +425,11 @@ end;
 
 procedure TForm1.pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
-var i, edgew: integer;
+var i, j, edgew: integer;
 begin
-  edgew := corner_dim+4; // Set thickness of clickable edges.
   if Button = mbLeft then // Left click.
     begin
+    edgew := corner_dim+4; // Set thickness of clickable edges.
     layer := 0; // Assume the background was selected.
     spriteselect := -1; // Assume no sprite selected.
     pieceselect := -1; // Assume no piece selected.
@@ -458,25 +458,43 @@ begin
     end
   else if Button = mbRight then // Right click.
     begin
-    i := spritecount;
-    Inc(spritecount); // Add sprite.
-    SetLength(spritenames,spritecount);
-    spritenames[i] := 'sprite'+IntToStr(i); // Give sprite name "sprite#".
-    SetLength(spritetable,spritecount*4);
-    if chkSnap.Checked then
+    for i := 0 to spritecount-1 do // Check if sprite was right-clicked.
+      if (Abs(mouseimg_x-spritetable[i*4]) < spritetable[(i*4)+2]) and (Abs(mouseimg_y-spritetable[(i*4)+1]) < spritetable[(i*4)+3]) then
+        begin
+        layer := 2; // Select piece layer.
+        spriteselect := i; // Select clicked sprite.
+        j := piececount;
+        Inc(piececount); // Add piece.
+        SetLength(piecetable,piececount*4);
+        piecetable[j*4] := mouseimg_x-16;
+        piecetable[(j*4)+1] := mouseimg_y-16;
+        piecetable[(j*4)+2] := 0;
+        piecetable[(j*4)+3] := 15;
+        pieceselect := j; // Select new piece
+        break; // Stop checking sprites.
+        end;
+    if layer = 0 then // Background was right-clicked.
       begin
-      spritetable[i*4] := Nearest(mouseimg_x,grid_w);
-      spritetable[(i*4)+1] := Nearest(mouseimg_y,grid_h);
-      end
-    else
-      begin
-      spritetable[i*4] := mouseimg_x;
-      spritetable[(i*4)+1] := mouseimg_y;
+      i := spritecount;
+      Inc(spritecount); // Add sprite.
+      SetLength(spritenames,spritecount);
+      spritenames[i] := 'sprite'+IntToStr(i); // Give sprite name "sprite#".
+      SetLength(spritetable,spritecount*4);
+      if chkSnap.Checked then
+        begin
+        spritetable[i*4] := Nearest(mouseimg_x,grid_w);
+        spritetable[(i*4)+1] := Nearest(mouseimg_y,grid_h);
+        end
+      else
+        begin
+        spritetable[i*4] := mouseimg_x;
+        spritetable[(i*4)+1] := mouseimg_y;
+        end;
+      spritetable[(i*4)+2] := 40;
+      spritetable[(i*4)+3] := 40;
+      spriteselect := i; // Select new sprite.
+      layer := 1;
       end;
-    spritetable[(i*4)+2] := 40;
-    spritetable[(i*4)+3] := 40;
-    spriteselect := i; // Select new sprite.
-    layer := 1;
     end;
   UpdateDisplay;
 end;
