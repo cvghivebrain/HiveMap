@@ -57,6 +57,8 @@ type
     procedure CreatePal;
     procedure GetMousePos(x, y: integer);
     function MatchPal(col: TColor; pal: integer): boolean;
+    function FindSprite(x, y: integer): integer;
+    function FindPiece(x, y: integer): integer;
   public
     { Public declarations }
   end;
@@ -436,43 +438,40 @@ begin
     drag := true; // Start dragging whatever is under mouse.
     prev_x := X;
     prev_y := Y;
-    for i := 0 to spritecount-1 do
-      if (Abs(mouseimg_x-spritetable[i*4]) < spritetable[(i*4)+2]) and (Abs(mouseimg_y-spritetable[(i*4)+1]) < spritetable[(i*4)+3]) then
-        begin
-        layer := 1; // Select sprite layer.
-        spriteside := 0; // Assume edge of sprite wasn't clicked.
-        if mouseimg_x <= spritetable[i*4]-spritetable[(i*4)+2]+edgew then spriteside := side_left;
-        if mouseimg_x >= spritetable[i*4]+spritetable[(i*4)+2]-edgew then spriteside := side_right;
-        if mouseimg_y <= spritetable[(i*4)+1]-spritetable[(i*4)+3]+edgew then spriteside := spriteside+side_top;
-        if mouseimg_y >= spritetable[(i*4)+1]+spritetable[(i*4)+3]-edgew then spriteside := spriteside+side_bottom;
-        spriteselect := i;
-        break; // Stop checking sprites.
-        end;
-    for i := 0 to piececount-1 do
-      if InRect(mouseimg_x,mouseimg_y,piecetable[i*4],piecetable[(i*4)+1],piecewidth[piecetable[(i*4)+3]],pieceheight[piecetable[(i*4)+3]]) then
-        begin
-        layer := 2; // Select piece layer.
-        pieceselect := i;
-        break; // Stop checking pieces.
-        end;
+    i := FindSprite(mouseimg_x,mouseimg_y); // Find sprite under mouse pointer.
+    if i <> -1 then
+      begin
+      layer := 1; // Select sprite layer.
+      spriteside := 0; // Assume edge of sprite wasn't clicked.
+      if mouseimg_x <= spritetable[i*4]-spritetable[(i*4)+2]+edgew then spriteside := side_left;
+      if mouseimg_x >= spritetable[i*4]+spritetable[(i*4)+2]-edgew then spriteside := side_right;
+      if mouseimg_y <= spritetable[(i*4)+1]-spritetable[(i*4)+3]+edgew then spriteside := spriteside+side_top;
+      if mouseimg_y >= spritetable[(i*4)+1]+spritetable[(i*4)+3]-edgew then spriteside := spriteside+side_bottom;
+      spriteselect := i;
+      end;
+    i := FindPiece(mouseimg_x,mouseimg_y); // Find piece under mouse pointer.
+    if i <> -1 then
+      begin
+      layer := 2; // Select piece layer.
+      pieceselect := i;
+      end;
     end
   else if Button = mbRight then // Right click.
     begin
-    for i := 0 to spritecount-1 do // Check if sprite was right-clicked.
-      if (Abs(mouseimg_x-spritetable[i*4]) < spritetable[(i*4)+2]) and (Abs(mouseimg_y-spritetable[(i*4)+1]) < spritetable[(i*4)+3]) then
-        begin
-        layer := 2; // Select piece layer.
-        spriteselect := i; // Select clicked sprite.
-        j := piececount;
-        Inc(piececount); // Add piece.
-        SetLength(piecetable,piececount*4);
-        piecetable[j*4] := mouseimg_x-16;
-        piecetable[(j*4)+1] := mouseimg_y-16;
-        piecetable[(j*4)+2] := 0;
-        piecetable[(j*4)+3] := 15;
-        pieceselect := j; // Select new piece
-        break; // Stop checking sprites.
-        end;
+    i := FindSprite(mouseimg_x,mouseimg_y); // Find sprite under mouse pointer.
+    if i <> -1 then
+      begin
+      layer := 2; // Select piece layer.
+      spriteselect := i; // Select clicked sprite.
+      j := piececount;
+      Inc(piececount); // Add piece.
+      SetLength(piecetable,piececount*4);
+      piecetable[j*4] := mouseimg_x-16;
+      piecetable[(j*4)+1] := mouseimg_y-16;
+      piecetable[(j*4)+2] := 0;
+      piecetable[(j*4)+3] := 15;
+      pieceselect := j; // Select new piece.
+      end;
     if layer = 0 then // Background was right-clicked.
       begin
       i := spritecount;
@@ -497,6 +496,30 @@ begin
       end;
     end;
   UpdateDisplay;
+end;
+
+function TForm1.FindSprite(x, y: integer): integer;
+var i: integer;
+begin
+  result := -1; // Assume no sprite found.
+  for i := 0 to spritecount-1 do
+    if (Abs(x-spritetable[i*4]) < spritetable[(i*4)+2]) and (Abs(y-spritetable[(i*4)+1]) < spritetable[(i*4)+3]) then
+      begin
+      result := i;
+      break; // Stop searching.
+      end;
+end;
+
+function TForm1.FindPiece(x, y: integer): integer;
+var i: integer;
+begin
+  result := -1; // Assume no piece found.
+  for i := 0 to piececount-1 do
+    if InRect(x,y,piecetable[i*4],piecetable[(i*4)+1],piecewidth[piecetable[(i*4)+3]],pieceheight[piecetable[(i*4)+3]]) then
+      begin
+      result := i;
+      break; // Stop searching.
+      end;
 end;
 
 procedure TForm1.pbWorkspaceMouseEnter(Sender: TObject);
