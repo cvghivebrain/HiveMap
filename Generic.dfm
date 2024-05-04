@@ -204,6 +204,24 @@ object Form1: TForm1
     TabOrder = 7
     OnClick = chkGridClick
   end
+  object btnDelete: TButton
+    Left = 969
+    Top = 240
+    Width = 75
+    Height = 25
+    Caption = 'Delete Sprite'
+    TabOrder = 8
+    OnClick = btnDeleteClick
+  end
+  object btnDelPieces: TButton
+    Left = 1050
+    Top = 240
+    Width = 119
+    Height = 25
+    Caption = 'Delete Sprite + Pieces'
+    TabOrder = 9
+    OnClick = btnDelPiecesClick
+  end
   object dlgLoad: TOpenDialog
     Left = 480
     Top = 8

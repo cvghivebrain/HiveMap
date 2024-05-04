@@ -25,6 +25,8 @@ type
     lblSnap: TLabel;
     lblPiece: TLabel;
     pbPiece: TPaintBox;
+    btnDelete: TButton;
+    btnDelPieces: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
@@ -50,6 +52,8 @@ type
     procedure pbPieceMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure btnDeleteClick(Sender: TObject);
+    procedure btnDelPiecesClick(Sender: TObject);
   private
     { Private declarations }
     procedure LoadPNG;
@@ -116,6 +120,8 @@ begin
   editSprite.Left := memINI.Left;
   lblPiece.Left := memINI.Left;
   pbPiece.Left := memINI.Left;
+  btnDelete.Left := memINI.Left;
+  btnDelPieces.Left := memINI.Left+btnDelete.Width+6;
   UpdateDisplay;
 end;
 
@@ -625,6 +631,7 @@ begin
     begin
     if layer = 1 then DeleteSprite(spriteselect) // Delete selected sprite.
     else if layer = 2 then DeletePiece(pieceselect); // Delete selected piece.
+    layer := 0; // Switch to background layer.
     UpdateDisplay;
     end;
 end;
@@ -647,7 +654,6 @@ begin
   SetLength(spritetable,Length(spritetable)-4);
   Dec(spritecount); // Decrement counter;
   spriteselect := -1; // Deselect sprite.
-  layer := 0; // Switch to background layer.
 end;
 
 procedure TForm1.DeletePiece(i: integer);
@@ -666,7 +672,35 @@ begin
   SetLength(piecetable,Length(piecetable)-4);
   Dec(piececount); // Decrement counter;
   pieceselect := -1; // Deselect piece.
-  layer := 0; // Switch to background layer.
+end;
+
+procedure TForm1.btnDeleteClick(Sender: TObject);
+begin
+  if layer <> 1 then exit; // Do nothing if not on sprite layer.
+  DeleteSprite(spriteselect); // Delete selected sprite.
+  UpdateDisplay;
+end;
+
+procedure TForm1.btnDelPiecesClick(Sender: TObject);
+var i, x, y, w, h: integer;
+begin
+  if layer <> 1 then exit;
+  if spriteselect = -1 then exit;
+  x := spritetable[spriteselect*4]-spritetable[(spriteselect*4)+2];
+  y := spritetable[(spriteselect*4)+1]-spritetable[(spriteselect*4)+3];
+  w := spritetable[(spriteselect*4)+2]*2;
+  h := spritetable[(spriteselect*4)+3]*2;
+  i := 0;
+  while i < piececount do
+    if (piecetable[i*4] >= x) and (piecetable[(i*4)+1] >= y) and (piecetable[i*4]+piecewidth[piecetable[(i*4)+3]] < x+w)
+    and (piecetable[(i*4)+1]+pieceheight[piecetable[(i*4)+3]] < y+h) then
+      begin
+      pieceselect := i;
+      DeletePiece(i); // Delete piece if it's inside the sprite.
+      end
+    else Inc(i); // Next piece.
+  DeleteSprite(spriteselect); // Delete selected sprite.
+  UpdateDisplay;
 end;
 
 end.
