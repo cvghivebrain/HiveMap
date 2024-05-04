@@ -49,6 +49,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure pbPieceMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
     procedure LoadPNG;
@@ -59,6 +60,7 @@ type
     function MatchPal(col: TColor; pal: integer): boolean;
     function FindSprite(x, y: integer): integer;
     function FindPiece(x, y: integer): integer;
+    procedure DeleteSprite(i: integer);
   public
     { Public declarations }
   end;
@@ -612,6 +614,37 @@ begin
   grid_w := GetGridW(editGrid.Text); // Read grid size from text box (minimum 8).
   grid_h := GetGridH(editGrid.Text);
   UpdateDisplay;
+end;
+
+procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_DELETE then
+    begin
+    if layer = 1 then DeleteSprite(spriteselect); // Delete selected sprite.
+    UpdateDisplay;
+    end;
+end;
+
+procedure TForm1.DeleteSprite(i: integer);
+var j: integer;
+begin
+  if spriteselect = -1 then exit;
+  if spritecount = 0 then exit;
+  if (i < 0) or (i >= spritecount) then exit; // Do nothing if target is invalid.
+  for j := i to spritecount-2 do
+    begin
+    spritenames[i] := spritenames[i+1]; // Shift names back 1.
+    spritetable[i*4] := spritetable[(i*4)+4];
+    spritetable[(i*4)+1] := spritetable[(i*4)+5];
+    spritetable[(i*4)+2] := spritetable[(i*4)+6];
+    spritetable[(i*4)+3] := spritetable[(i*4)+7];
+    end;
+  SetLength(spritenames,Length(spritenames)-1); // Truncate array.
+  SetLength(spritetable,Length(spritetable)-4);
+  Dec(spritecount); // Decrement counter;
+  spriteselect := -1; // Deselect sprite.
+  layer := 0; // Switch to background layer.
 end;
 
 end.
