@@ -61,6 +61,7 @@ type
     function FindSprite(x, y: integer): integer;
     function FindPiece(x, y: integer): integer;
     procedure DeleteSprite(i: integer);
+    procedure DeletePiece(i: integer);
   public
     { Public declarations }
   end;
@@ -460,6 +461,7 @@ begin
     end
   else if Button = mbRight then // Right click.
     begin
+    layer := 0;
     i := FindSprite(mouseimg_x,mouseimg_y); // Find sprite under mouse pointer.
     if i <> -1 then
       begin
@@ -621,7 +623,8 @@ procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_DELETE then
     begin
-    if layer = 1 then DeleteSprite(spriteselect); // Delete selected sprite.
+    if layer = 1 then DeleteSprite(spriteselect) // Delete selected sprite.
+    else if layer = 2 then DeletePiece(pieceselect); // Delete selected piece.
     UpdateDisplay;
     end;
 end;
@@ -634,16 +637,35 @@ begin
   if (i < 0) or (i >= spritecount) then exit; // Do nothing if target is invalid.
   for j := i to spritecount-2 do
     begin
-    spritenames[i] := spritenames[i+1]; // Shift names back 1.
-    spritetable[i*4] := spritetable[(i*4)+4];
-    spritetable[(i*4)+1] := spritetable[(i*4)+5];
-    spritetable[(i*4)+2] := spritetable[(i*4)+6];
-    spritetable[(i*4)+3] := spritetable[(i*4)+7];
+    spritenames[j] := spritenames[j+1]; // Shift names back 1.
+    spritetable[j*4] := spritetable[(j*4)+4];
+    spritetable[(j*4)+1] := spritetable[(j*4)+5];
+    spritetable[(j*4)+2] := spritetable[(j*4)+6];
+    spritetable[(j*4)+3] := spritetable[(j*4)+7];
     end;
   SetLength(spritenames,Length(spritenames)-1); // Truncate array.
   SetLength(spritetable,Length(spritetable)-4);
   Dec(spritecount); // Decrement counter;
   spriteselect := -1; // Deselect sprite.
+  layer := 0; // Switch to background layer.
+end;
+
+procedure TForm1.DeletePiece(i: integer);
+var j: integer;
+begin
+  if pieceselect = -1 then exit;
+  if piececount = 0 then exit;
+  if (i < 0) or (i >= piececount) then exit; // Do nothing if target is invalid.
+  for j := i to piececount-2 do
+    begin
+    piecetable[j*4] := piecetable[(j*4)+4];
+    piecetable[(j*4)+1] := piecetable[(j*4)+5];
+    piecetable[(j*4)+2] := piecetable[(j*4)+6];
+    piecetable[(j*4)+3] := piecetable[(j*4)+7];
+    end;
+  SetLength(piecetable,Length(piecetable)-4);
+  Dec(piececount); // Decrement counter;
+  pieceselect := -1; // Deselect piece.
   layer := 0; // Switch to background layer.
 end;
 
