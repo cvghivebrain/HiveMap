@@ -133,11 +133,16 @@ const bg: array[0..2] of byte = (40,44,52); // Background colour.
   pc: array[0..11] of byte = (255,0,0, 255,255,0, 0,255,0, 0,0,255); // Piece colours.
   gc: array[0..2] of byte = (255,128,255); // Grid colour.
 begin
+  // Background.
   FillScreen(bg[0],bg[1],bg[2]);
   if not pngloaded then exit; // Do nothing further if no PNG is loaded.
+
+  // Image.
   w := Min(PNG.Width-pos_x,pbWorkspace.Width div scale);
   h := Min(PNG.Height-pos_y,pbWorkspace.Height div scale);
   DrawPNG(pos_x,pos_y,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255); // Draw image.
+
+  // Grid.
   if chkGrid.Checked then
     begin
     i := (grid_w-(pos_x mod grid_w))*scale;
@@ -153,6 +158,8 @@ begin
       i := i+(grid_h*scale);
       end;
     end;
+
+  // Sprite boxes.
   for i := 0 to spritecount-1 do // Draw sprite boxes.
     begin
     x := ((spritetable[i*4]-spritetable[(i*4)+2]-pos_x)*scale)+pbWorkspace.Left;
@@ -169,6 +176,8 @@ begin
       DrawRect(sc[0],sc[1],sc[2],255,x+w-corner_dim,y+h-corner_dim,corner_dim,corner_dim);
       end;
     end;
+
+  // Piece boxes.
   for i := 0 to piececount-1 do // Draw piece boxes.
     begin
     x := ((piecetable[i*4]-pos_x)*scale)+pbWorkspace.Left;
@@ -180,6 +189,8 @@ begin
     if (layer = 2) and (i = pieceselect) then
       DrawBox(pc[p],pc[p+1],pc[p+2],255,x-2,y-2,w+4,h+4); // Draw second box around selected piece.
     end;
+
+  // Right menu.
   DrawRect(bg[0],bg[1],bg[2],255,0,0,Form1.ClientWidth,pbWorkspace.Top); // Clear top area.
   DrawRect(bg[0],bg[1],bg[2],255,pbWorkspace.Width,0,Form1.ClientWidth-pbWorkspace.Width,Form1.ClientHeight); // Clear right area.
   for i := 0 to 63 do
@@ -512,7 +523,7 @@ function TForm1.FindSprite(x, y: integer): integer;
 var i: integer;
 begin
   result := -1; // Assume no sprite found.
-  for i := 0 to spritecount-1 do
+  for i := spritecount-1 downto 0 do
     if (Abs(x-spritetable[i*4]) < spritetable[(i*4)+2]) and (Abs(y-spritetable[(i*4)+1]) < spritetable[(i*4)+3]) then
       begin
       result := i;
@@ -524,7 +535,7 @@ function TForm1.FindPiece(x, y: integer): integer;
 var i: integer;
 begin
   result := -1; // Assume no piece found.
-  for i := 0 to piececount-1 do
+  for i := piececount-1 downto 0 do
     if InRect(x,y,piecetable[i*4],piecetable[(i*4)+1],piecewidth[piecetable[(i*4)+3]],pieceheight[piecetable[(i*4)+3]]) then
       begin
       result := i;
