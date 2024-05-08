@@ -66,6 +66,7 @@ type
     function FindPiece(x, y: integer): integer;
     procedure DeleteSprite(i: integer);
     procedure DeletePiece(i: integer);
+    function PieceInSprite(p, s: integer): boolean;
   public
     { Public declarations }
   end;
@@ -204,7 +205,10 @@ begin
   else
     begin
     editSprite.Text := spritenames[spriteselect]; // Show name of selected sprite.
-    editSprite.EditLabel.Caption := 'Sprite '+IntToStr(spriteselect+1)+'/'+IntToStr(spritecount); // Show sprite number.
+    j := 0;
+    for i := 0 to piececount-1 do
+      if PieceInSprite(i,spriteselect) then Inc(j); // Count pieces in selected sprite.
+    editSprite.EditLabel.Caption := 'Sprite '+IntToStr(spriteselect+1)+'/'+IntToStr(spritecount)+' ['+IntToStr(j)+' pieces]'; // Show sprite number.
     end;
   if pieceselect = -1 then lblPiece.Caption := 'Piece'
   else
@@ -693,18 +697,13 @@ begin
 end;
 
 procedure TForm1.btnDelPiecesClick(Sender: TObject);
-var i, x, y, w, h: integer;
+var i: integer;
 begin
   if layer <> 1 then exit;
   if spriteselect = -1 then exit;
-  x := spritetable[spriteselect*4]-spritetable[(spriteselect*4)+2];
-  y := spritetable[(spriteselect*4)+1]-spritetable[(spriteselect*4)+3];
-  w := spritetable[(spriteselect*4)+2]*2;
-  h := spritetable[(spriteselect*4)+3]*2;
   i := 0;
   while i < piececount do
-    if (piecetable[i*4] >= x) and (piecetable[(i*4)+1] >= y) and (piecetable[i*4]+piecewidth[piecetable[(i*4)+3]] < x+w)
-    and (piecetable[(i*4)+1]+pieceheight[piecetable[(i*4)+3]] < y+h) then
+    if PieceInSprite(i,spriteselect) then // Check if each piece is in the sprite.
       begin
       pieceselect := i;
       DeletePiece(i); // Delete piece if it's inside the sprite.
@@ -712,6 +711,21 @@ begin
     else Inc(i); // Next piece.
   DeleteSprite(spriteselect); // Delete selected sprite.
   UpdateDisplay;
+end;
+
+function TForm1.PieceInSprite(p, s: integer): boolean;
+var x, y, w, h: integer;
+begin
+  result := false; // Assume piece isn't in sprite.
+  x := spritetable[s*4]-spritetable[(s*4)+2]; // Get position of sprite.
+  y := spritetable[(s*4)+1]-spritetable[(s*4)+3];
+  w := spritetable[(s*4)+2]*2; // Get width/height of sprite.
+  h := spritetable[(s*4)+3]*2;
+  if piecetable[p*4] < x then exit; // Piece is left of sprite.
+  if piecetable[(p*4)+1] < y then exit; // Piece is above sprite.
+  if piecetable[p*4]+piecewidth[piecetable[(p*4)+3]] >= x+w then exit; // Piece is right of sprite.
+  if piecetable[(p*4)+1]+pieceheight[piecetable[(p*4)+3]] >= y+h then exit; // Piece is below sprite.
+  result := true; // Piece is inside sprite.
 end;
 
 end.
