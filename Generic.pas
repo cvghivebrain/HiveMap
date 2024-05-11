@@ -76,7 +76,7 @@ var
   pngloaded, drag, wheeldelay, hover: boolean;
   pos_x, pos_y, prev_x, prev_y, scale, palused, layer, spritecount, spriteselect,
     spriteside, grid_w, grid_h, mouseimg_x, mouseimg_y, mousewin_x, mousewin_y,
-    piececount, pieceselect: integer;
+    piececount, pieceselect, colorselect, color_w, color_h: integer;
   pngpath, pngpathrel, inipath: string;
   palarray: array[0..63] of TColor;
   spritenames: array of string;
@@ -106,6 +106,9 @@ begin
   scale := 1; // Default zoom.
   spriteselect := -1; // No sprite selected.
   pieceselect := -1; // No piece selected.
+  colorselect := -1;
+  color_w := pbPalette.Width div 16;
+  color_h := pbPalette.Height div 4;
   grid_w := GetGridW(editGrid.Text); // Read grid size from text box (minimum 8).
   grid_h := GetGridH(editGrid.Text);
   for i := 2 to max_scale do menuZoom.Items.Add(IntToStr(i)+'x'); // Populate zoom menu.
@@ -197,6 +200,7 @@ begin
   for i := 0 to 63 do
     DrawRect(GetRValue(palarray[i]),GetGValue(palarray[i]),GetBValue(palarray[i]),255,
       pbPalette.Left+((i mod 16)*20),pbPalette.Top+((i div 16)*20),20,20); // Draw palette.
+  if colorselect <> -1 then DrawBox2(255,255,255,255,pbPalette.Left+((colorselect mod 16)*color_w),pbPalette.Top+((colorselect div 16)*color_h),color_w,color_h,2); // Highlight color.
   if spriteselect = -1 then
     begin
     editSprite.Text := '';
@@ -227,7 +231,7 @@ begin
     DrawGrid(255,255,255,255,pbPiece.Left,pbPiece.Top,pbPiece.Width,pbPiece.Height,4,4,true);
     p := piecetable[(pieceselect*4)+2]*3;
     DrawBox2(pc[p],pc[p+1],pc[p+2],255,pbPiece.Left,pbPiece.Top,(piecewidth[piecetable[(pieceselect*4)+3]]*w)+1,(pieceheight[piecetable[(pieceselect*4)+3]]*h)+1,2); // Highlight piece.
-    DrawBox2(255,255,255,255,pbPalette.Left,pbPalette.Top+(piecetable[(pieceselect*4)+2]*(pbPalette.Height div 4)),pbPalette.Width,pbPalette.Height div 4,2); // Highlight palette line.
+    DrawBox2(255,255,255,255,pbPalette.Left,pbPalette.Top+(piecetable[(pieceselect*4)+2]*color_h),pbPalette.Width,color_h,2); // Highlight palette line.
     end;
   pic.Refresh;
 end;
@@ -432,9 +436,16 @@ end;
 procedure TForm1.pbPaletteMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
+  if layer = 0 then
+    begin
+    colorselect := (X div color_w)+((Y div color_h)*16); // Select individual colour.
+    Screen.Cursor := crCross; // Change mouse pointer to crosshair.
+    UpdateDisplay;
+    exit;
+    end;
   if pieceselect <> -1 then
     begin
-    piecetable[(pieceselect*4)+2] := Y div (pbPalette.Height div 4); // Change palette of piece.
+    piecetable[(pieceselect*4)+2] := Y div color_h; // Change palette of piece.
     UpdateDisplay;
     end;
 end;
@@ -453,6 +464,14 @@ procedure TForm1.pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var i, j, edgew: integer;
 begin
+  if colorselect <> -1 then
+    begin
+    palarray[colorselect] := PNG.Pixels[mouseimg_x,mouseimg_y]; // Get colour at mouse pointer.
+    Screen.Cursor := crArrow; // Change mouse pointer back to pointer.
+    colorselect := -1; // Unselect colour.
+    UpdateDisplay;
+    exit;
+    end;
   if Button = mbLeft then // Left click.
     begin
     edgew := corner_dim+4; // Set thickness of clickable edges.
