@@ -92,6 +92,7 @@ const
   side_right: integer = 8;
   piecewidth: array[0..15] of integer = (8,8,8,8,16,16,16,16,24,24,24,24,32,32,32,32);
   pieceheight: array[0..15] of integer = (8,16,24,32,8,16,24,32,8,16,24,32,8,16,24,32);
+  tilecount: array[0..15] of integer = (1,2,3,4,2,4,6,8,3,6,9,12,4,8,12,16);
 
 implementation
 
@@ -130,7 +131,7 @@ begin
 end;
 
 procedure TForm1.UpdateDisplay;
-var w, h, x, y, i, j, p: integer;
+var w, h, x, y, i, j, k, p: integer;
   col: TColor;
 const bg: array[0..2] of byte = (40,44,52); // Background colour.
   sc: array[0..2] of byte = (255,255,255); // Sprite colour.
@@ -210,9 +211,14 @@ begin
     begin
     editSprite.Text := spritenames[spriteselect]; // Show name of selected sprite.
     j := 0;
+    k := 0;
     for i := 0 to piececount-1 do
-      if PieceInSprite(i,spriteselect) then Inc(j); // Count pieces in selected sprite.
-    editSprite.EditLabel.Caption := 'Sprite '+IntToStr(spriteselect+1)+'/'+IntToStr(spritecount)+' ['+IntToStr(j)+' pieces]'; // Show sprite number.
+      if PieceInSprite(i,spriteselect) then
+        begin
+        Inc(j); // Count pieces in selected sprite.
+        k := k+tilecount[piecetable[(i*4)+3]]; // Count tiles in selected sprite.
+        end;
+    editSprite.EditLabel.Caption := 'Sprite '+IntToStr(spriteselect+1)+'/'+IntToStr(spritecount)+' ['+Quantity(j,'piece')+'; '+Quantity(k,'tile')+']'; // Show sprite number.
     end;
   if pieceselect = -1 then lblPiece.Caption := 'Piece'
   else

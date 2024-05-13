@@ -9,6 +9,7 @@ function GetGridW(str: string): integer;
 function GetGridH(str: string): integer;
 function Nearest(num, interval: integer): integer;
 function InRect(x, y, rx, ry, w, h: integer): boolean;
+function Quantity(n: integer; s: string): string;
 
 implementation
 
@@ -60,6 +61,14 @@ function InRect(x, y, rx, ry, w, h: integer): boolean;
 begin
   if (x >= rx) and (x < rx+w) and (y >= ry) and (y < ry+h) then result := true
   else result := false;
+end;
+
+{ Show quantity as string and convert string to plural if needed. }
+
+function Quantity(n: integer; s: string): string;
+begin
+  if n = 1 then result := IntToStr(n)+' '+s
+  else result := IntToStr(n)+' '+s+'s';
 end;
 
 end.
