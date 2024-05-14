@@ -145,7 +145,7 @@ begin
   // Image.
   w := Min(PNG.Width-pos_x,pbWorkspace.Width div scale);
   h := Min(PNG.Height-pos_y,pbWorkspace.Height div scale);
-  DrawPNG(pos_x,pos_y,w,h,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255); // Draw image.
+  DrawPNG(pos_x,pos_y,w+1,h+1,pbWorkspace.Left,pbWorkspace.Top,scale,scale,0,255,255,255,255); // Draw image.
 
   // Grid.
   if chkGrid.Checked then
@@ -445,7 +445,6 @@ begin
   if layer = 0 then
     begin
     colorselect := (X div color_w)+((Y div color_h)*16); // Select individual colour.
-    Screen.Cursor := crCross; // Change mouse pointer to crosshair.
     UpdateDisplay;
     exit;
     end;
@@ -581,6 +580,7 @@ procedure TForm1.pbWorkspaceMouseLeave(Sender: TObject);
 begin
   drag := false;
   hover := false;
+  Screen.Cursor := crArrow;
 end;
 
 procedure TForm1.pbWorkspaceMouseUp(Sender: TObject; Button: TMouseButton;
@@ -601,6 +601,7 @@ procedure TForm1.pbWorkspaceMouseMove(Sender: TObject; Shift: TShiftState; X,
 var dx, dy: integer;
 begin
   GetMousePos(X,Y);
+  if colorselect <> -1 then Screen.Cursor := crCross; // Use crosshair cursor if in colour select mode.
   if not drag then exit; // Do nothing if not dragging.
   if not pngloaded then exit; // Do nothing if no PNG is loaded.
   dx := (prev_x div scale)-(X div scale); // Get movement distance.
