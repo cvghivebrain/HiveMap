@@ -486,6 +486,11 @@ begin
     drag := true; // Start dragging whatever is under mouse.
     prev_x := X;
     prev_y := Y;
+    if ssCtrl in Shift then
+      begin
+      UpdateDisplay;
+      exit; // Always drag background if CTRL key is held.
+      end;
     i := FindSprite(mouseimg_x,mouseimg_y); // Find sprite under mouse pointer.
     if i <> -1 then
       begin
