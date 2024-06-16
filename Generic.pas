@@ -67,6 +67,12 @@ type
     procedure DeleteSprite(i: integer);
     procedure DeletePiece(i: integer);
     function PieceInSprite(p, s: integer): boolean;
+    function GetPieceX(p: integer): integer;
+    function GetPieceY(p: integer): integer;
+    function GetPiecePal(p: integer): integer;
+    function GetPieceSize(p: integer): integer;
+    function GetPieceW(p: integer): integer;
+    function GetPieceH(p: integer): integer;
   public
     { Public declarations }
   end;
@@ -90,6 +96,12 @@ const
   side_bottom: integer = 2;
   side_left: integer = 4;
   side_right: integer = 8;
+  piecetable_x: integer = 0;
+  piecetable_y: integer = 1;
+  piecetable_bits: integer = 2;
+  piecetable_size: integer = 3;
+  piecetable_items: integer = 4;
+  piecebits_pal: integer = 3; // %00000011
   piecewidth: array[0..15] of integer = (8,8,8,8,16,16,16,16,24,24,24,24,32,32,32,32);
   pieceheight: array[0..15] of integer = (8,16,24,32,8,16,24,32,8,16,24,32,8,16,24,32);
   tilecount: array[0..15] of integer = (1,2,3,4,2,4,6,8,3,6,9,12,4,8,12,16);
@@ -185,11 +197,11 @@ begin
   // Piece boxes.
   for i := 0 to piececount-1 do // Draw piece boxes.
     begin
-    x := ((piecetable[i*4]-pos_x)*scale)+pbWorkspace.Left;
-    y := ((piecetable[(i*4)+1]-pos_y)*scale)+pbWorkspace.Top;
-    w := piecewidth[piecetable[(i*4)+3]]*scale;
-    h := pieceheight[piecetable[(i*4)+3]]*scale;
-    p := piecetable[(i*4)+2]*3;
+    x := ((GetPieceX(i)-pos_x)*scale)+pbWorkspace.Left;
+    y := ((GetPieceY(i)-pos_y)*scale)+pbWorkspace.Top;
+    w := GetPieceW(i)*scale;
+    h := GetPieceH(i)*scale;
+    p := GetPiecePal(i)*3;
     DrawBoxFill(pc[p],pc[p+1],pc[p+2],255,pc[p],pc[p+1],pc[p+2],92,x,y,w,h); // Draw box around piece.
     if (layer = 2) and (i = pieceselect) then
       DrawBox(pc[p],pc[p+1],pc[p+2],255,x-2,y-2,w+4,h+4); // Draw second box around selected piece.
@@ -216,7 +228,7 @@ begin
       if PieceInSprite(i,spriteselect) then
         begin
         Inc(j); // Count pieces in selected sprite.
-        k := k+tilecount[piecetable[(i*4)+3]]; // Count tiles in selected sprite.
+        k := k+tilecount[GetPieceSize(i)]; // Count tiles in selected sprite.
         end;
     editSprite.EditLabel.Caption := 'Sprite '+IntToStr(spriteselect+1)+'/'+IntToStr(spritecount)+' ['+Quantity(j,'piece')+'; '+Quantity(k,'tile')+']'; // Show sprite number.
     end;
@@ -230,14 +242,14 @@ begin
     for i := 0 to 31 do
       for j := 0 to 31 do
         begin
-        col := PNG.Pixels[piecetable[pieceselect*4]+j,piecetable[(pieceselect*4)+1]+i]; // Read pixel.
-        if MatchPal(col,piecetable[(pieceselect*4)+2]) then
+        col := PNG.Pixels[GetPieceX(pieceselect)+j,GetPieceY(pieceselect)+i]; // Read pixel.
+        if MatchPal(col,GetPiecePal(pieceselect)) then
           DrawRect(GetRValue(col),GetGValue(col),GetBValue(col),255,pbPiece.Left+(j*w),pbPiece.Top+(i*h),w,h); // Draw pixel if in palette.
         end;
     DrawGrid(255,255,255,255,pbPiece.Left,pbPiece.Top,pbPiece.Width,pbPiece.Height,4,4,true);
-    p := piecetable[(pieceselect*4)+2]*3;
-    DrawBox2(pc[p],pc[p+1],pc[p+2],255,pbPiece.Left,pbPiece.Top,(piecewidth[piecetable[(pieceselect*4)+3]]*w)+1,(pieceheight[piecetable[(pieceselect*4)+3]]*h)+1,2); // Highlight piece.
-    DrawBox2(255,255,255,255,pbPalette.Left,pbPalette.Top+(piecetable[(pieceselect*4)+2]*color_h),pbPalette.Width,color_h,2); // Highlight palette line.
+    p := GetPiecePal(pieceselect)*3;
+    DrawBox2(pc[p],pc[p+1],pc[p+2],255,pbPiece.Left,pbPiece.Top,(GetPieceW(pieceselect)*w)+1,(GetPieceH(pieceselect)*h)+1,2); // Highlight piece.
+    DrawBox2(255,255,255,255,pbPalette.Left,pbPalette.Top+(GetPiecePal(pieceselect)*color_h),pbPalette.Width,color_h,2); // Highlight palette line.
     end;
   pic.Refresh;
 end;
@@ -399,8 +411,8 @@ begin
   for i := 0 to spritecount-1 do WriteLn(inifile,s+spritenames[i]+','+IntToStr(spritetable[i*4])+','+
     IntToStr(spritetable[(i*4)+1])+','+IntToStr(spritetable[(i*4)+2])+','+IntToStr(spritetable[(i*4)+3])); // Write sprite table.
   s := 'piece=';
-  for i := 0 to piececount-1 do WriteLn(inifile,s+IntToStr(piecetable[i*4])+','+
-    IntToStr(piecetable[(i*4)+1])+','+IntToStr(piecetable[(i*4)+2])+','+IntToStr(piecetable[(i*4)+3])); // Write piece table.
+  for i := 0 to piececount-1 do WriteLn(inifile,s+IntToStr(GetPieceX(i))+','+
+    IntToStr(GetPieceY(i))+','+IntToStr(piecetable[(i*4)+2])+','+IntToStr(GetPieceSize(i))); // Write piece table.
   WriteLn(inifile,'grid='+editGrid.Text); // Write grid size.
   CloseFile(inifile);
 end;
@@ -450,7 +462,7 @@ begin
     end;
   if pieceselect <> -1 then
     begin
-    piecetable[(pieceselect*4)+2] := Y div color_h; // Change palette of piece.
+    piecetable[(pieceselect*4)+2] := (piecetable[(pieceselect*4)+2] and ($FF-piecebits_pal)) or (Y div color_h); // Change palette of piece.
     UpdateDisplay;
     end;
 end;
@@ -569,7 +581,7 @@ var i: integer;
 begin
   result := -1; // Assume no piece found.
   for i := piececount-1 downto 0 do
-    if InRect(x,y,piecetable[i*4],piecetable[(i*4)+1],piecewidth[piecetable[(i*4)+3]],pieceheight[piecetable[(i*4)+3]]) then
+    if InRect(x,y,GetPieceX(i),GetPieceY(i),GetPieceW(i),GetPieceH(i)) then
       begin
       result := i;
       break; // Stop searching.
@@ -752,11 +764,41 @@ begin
   y := spritetable[(s*4)+1]-spritetable[(s*4)+3];
   w := spritetable[(s*4)+2]*2; // Get width/height of sprite.
   h := spritetable[(s*4)+3]*2;
-  if piecetable[p*4] < x then exit; // Piece is left of sprite.
-  if piecetable[(p*4)+1] < y then exit; // Piece is above sprite.
-  if piecetable[p*4]+piecewidth[piecetable[(p*4)+3]] >= x+w then exit; // Piece is right of sprite.
-  if piecetable[(p*4)+1]+pieceheight[piecetable[(p*4)+3]] >= y+h then exit; // Piece is below sprite.
+  if GetPieceX(p) < x then exit; // Piece is left of sprite.
+  if GetPieceY(p) < y then exit; // Piece is above sprite.
+  if GetPieceX(p)+GetPieceW(p) >= x+w then exit; // Piece is right of sprite.
+  if GetPieceY(p)+GetPieceH(p) >= y+h then exit; // Piece is below sprite.
   result := true; // Piece is inside sprite.
+end;
+
+function TForm1.GetPieceX(p: integer): integer;
+begin
+  result := piecetable[(p*piecetable_items)+piecetable_x];
+end;
+
+function TForm1.GetPieceY(p: integer): integer;
+begin
+  result := piecetable[(p*piecetable_items)+piecetable_y];
+end;
+
+function TForm1.GetPiecePal(p: integer): integer;
+begin
+  result := piecetable[(p*piecetable_items)+piecetable_bits] and piecebits_pal;
+end;
+
+function TForm1.GetPieceSize(p: integer): integer;
+begin
+  result := piecetable[(p*piecetable_items)+piecetable_size];
+end;
+
+function TForm1.GetPieceW(p: integer): integer;
+begin
+  result := piecewidth[piecetable[(p*piecetable_items)+piecetable_size]];
+end;
+
+function TForm1.GetPieceH(p: integer): integer;
+begin
+  result := pieceheight[piecetable[(p*piecetable_items)+piecetable_size]];
 end;
 
 end.
