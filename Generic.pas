@@ -69,10 +69,18 @@ type
     function PieceInSprite(p, s: integer): boolean;
     function GetPieceX(p: integer): integer;
     function GetPieceY(p: integer): integer;
+    function GetPieceBits(p: integer): integer;
     function GetPiecePal(p: integer): integer;
+    function GetPieceHi(p: integer): integer;
     function GetPieceSize(p: integer): integer;
     function GetPieceW(p: integer): integer;
     function GetPieceH(p: integer): integer;
+    procedure SetPieceX(p, x: integer);
+    procedure SetPieceY(p, y: integer);
+    procedure SetPieceBits(p, b: integer);
+    procedure SetPiecePal(p, pal: integer);
+    procedure SetPieceHi(p, hi: integer);
+    procedure SetPieceSize(p, s: integer);
   public
     { Public declarations }
   end;
@@ -102,6 +110,7 @@ const
   piecetable_size: integer = 3;
   piecetable_items: integer = 4;
   piecebits_pal: integer = 3; // %00000011
+  piecebits_hi: integer = $10; // %00010000
   piecewidth: array[0..15] of integer = (8,8,8,8,16,16,16,16,24,24,24,24,32,32,32,32);
   pieceheight: array[0..15] of integer = (8,16,24,32,8,16,24,32,8,16,24,32,8,16,24,32);
   tilecount: array[0..15] of integer = (1,2,3,4,2,4,6,8,3,6,9,12,4,8,12,16);
@@ -377,10 +386,10 @@ begin
       begin
       s2 := Explode(s,'piece=',1);
       SetLength(piecetable,Length(piecetable)+4); // Add piece.
-      piecetable[piececount*4] := StrToInt(Explode(s2,',',0)); // Piece x pos.
-      piecetable[(piececount*4)+1] := StrToInt(Explode(s2,',',1)); // Piece y pos.
-      piecetable[(piececount*4)+2] := StrToInt(Explode(s2,',',2)); // Piece palette.
-      piecetable[(piececount*4)+3] := StrToInt(Explode(s2,',',3)); // Piece size.
+      SetPieceX(piececount,StrToInt(Explode(s2,',',0))); // Piece x pos.
+      SetPieceY(piececount,StrToInt(Explode(s2,',',1))); // Piece y pos.
+      SetPieceBits(piececount,StrToInt(Explode(s2,',',2))); // Piece palette.
+      SetPieceSize(piececount,StrToInt(Explode(s2,',',3))); // Piece size.
       Inc(piececount);
       end
     else if AnsiPos('grid=',s) = 1 then
@@ -412,7 +421,7 @@ begin
     IntToStr(spritetable[(i*4)+1])+','+IntToStr(spritetable[(i*4)+2])+','+IntToStr(spritetable[(i*4)+3])); // Write sprite table.
   s := 'piece=';
   for i := 0 to piececount-1 do WriteLn(inifile,s+IntToStr(GetPieceX(i))+','+
-    IntToStr(GetPieceY(i))+','+IntToStr(piecetable[(i*4)+2])+','+IntToStr(GetPieceSize(i))); // Write piece table.
+    IntToStr(GetPieceY(i))+','+IntToStr(GetPieceBits(i))+','+IntToStr(GetPieceSize(i))); // Write piece table.
   WriteLn(inifile,'grid='+editGrid.Text); // Write grid size.
   CloseFile(inifile);
 end;
@@ -462,7 +471,7 @@ begin
     end;
   if pieceselect <> -1 then
     begin
-    piecetable[(pieceselect*4)+2] := (piecetable[(pieceselect*4)+2] and ($FF-piecebits_pal)) or (Y div color_h); // Change palette of piece.
+    SetPiecePal(pieceselect,Y div color_h); // Change palette of piece.
     UpdateDisplay;
     end;
 end;
@@ -472,7 +481,7 @@ procedure TForm1.pbPieceMouseDown(Sender: TObject; Button: TMouseButton;
 begin
   if pieceselect <> -1 then
     begin
-    piecetable[(pieceselect*4)+3] := (Y div (pbPiece.Height div 4))+((X div (pbPiece.Width div 4))*4); // Change size of piece.
+    SetPieceSize(pieceselect,(Y div (pbPiece.Height div 4))+((X div (pbPiece.Width div 4))*4)); // Change size of piece.
     UpdateDisplay;
     end;
 end;
@@ -531,11 +540,11 @@ begin
       spriteselect := i; // Select clicked sprite.
       j := piececount;
       Inc(piececount); // Add piece.
-      SetLength(piecetable,piececount*4);
-      piecetable[j*4] := mouseimg_x-16;
-      piecetable[(j*4)+1] := mouseimg_y-16;
-      piecetable[(j*4)+2] := 0;
-      piecetable[(j*4)+3] := 15;
+      SetLength(piecetable,piececount*piecetable_items);
+      SetPieceX(j,mouseimg_x-16);
+      SetPieceY(j,mouseimg_y-16);
+      SetPieceBits(j,0);
+      SetPieceSize(j,15);
       pieceselect := j; // Select new piece.
       end;
     if layer = 0 then // Background was right-clicked.
@@ -649,8 +658,8 @@ begin
       end;
     2: // Piece.
       begin
-      piecetable[pieceselect*4] := piecetable[pieceselect*4]-dx; // Move piece box.
-      piecetable[(pieceselect*4)+1] := piecetable[(pieceselect*4)+1]-dy;
+      SetPieceX(pieceselect,GetPieceX(pieceselect)-dx); // Move piece box.
+      SetPieceY(pieceselect,GetPieceY(pieceselect)-dy);
       end;
   end;
   UpdateDisplay;
@@ -722,12 +731,12 @@ begin
   if (i < 0) or (i >= piececount) then exit; // Do nothing if target is invalid.
   for j := i to piececount-2 do
     begin
-    piecetable[j*4] := piecetable[(j*4)+4];
-    piecetable[(j*4)+1] := piecetable[(j*4)+5];
-    piecetable[(j*4)+2] := piecetable[(j*4)+6];
-    piecetable[(j*4)+3] := piecetable[(j*4)+7];
+    SetPieceX(j,GetPieceX(j+1));
+    SetPieceY(j,GetPieceY(j+1));
+    SetPieceBits(j,GetPieceBits(j+1));
+    SetPieceSize(j,GetPieceSize(j+1));
     end;
-  SetLength(piecetable,Length(piecetable)-4);
+  SetLength(piecetable,Length(piecetable)-piecetable_items);
   Dec(piececount); // Decrement counter;
   pieceselect := -1; // Deselect piece.
 end;
@@ -781,9 +790,19 @@ begin
   result := piecetable[(p*piecetable_items)+piecetable_y];
 end;
 
+function TForm1.GetPieceBits(p: integer): integer;
+begin
+  result := piecetable[(p*piecetable_items)+piecetable_bits];
+end;
+
 function TForm1.GetPiecePal(p: integer): integer;
 begin
-  result := piecetable[(p*piecetable_items)+piecetable_bits] and piecebits_pal;
+  result := GetPieceBits(p) and piecebits_pal;
+end;
+
+function TForm1.GetPieceHi(p: integer): integer;
+begin
+  result := GetPieceBits(p) and piecebits_hi;
 end;
 
 function TForm1.GetPieceSize(p: integer): integer;
@@ -799,6 +818,39 @@ end;
 function TForm1.GetPieceH(p: integer): integer;
 begin
   result := pieceheight[piecetable[(p*piecetable_items)+piecetable_size]];
+end;
+
+procedure TForm1.SetPieceX(p, x: integer);
+begin
+  piecetable[(p*piecetable_items)+piecetable_x] := x;
+end;
+
+procedure TForm1.SetPieceY(p, y: integer);
+begin
+  piecetable[(p*piecetable_items)+piecetable_y] := y;
+end;
+
+procedure TForm1.SetPieceBits(p, b: integer);
+begin
+  piecetable[(p*piecetable_items)+piecetable_bits] := b;
+end;
+
+procedure TForm1.SetPiecePal(p, pal: integer);
+begin
+  if pal > 3 then pal := 3;
+  SetPieceBits(p,(GetPieceBits(p) and ($FF-piecebits_pal)) or pal);
+end;
+
+procedure TForm1.SetPieceHi(p, hi: integer);
+begin
+  if hi > 0 then hi := piecebits_hi;
+  SetPieceBits(p,(GetPieceBits(p) and ($FF-piecebits_hi)) or hi);
+end;
+
+procedure TForm1.SetPieceSize(p, s: integer);
+begin
+  if s > 15 then s := 15;
+  piecetable[(p*piecetable_items)+piecetable_size] := s;
 end;
 
 end.
