@@ -81,6 +81,14 @@ type
     procedure SetPiecePal(p, pal: integer);
     procedure SetPieceHi(p, hi: integer);
     procedure SetPieceSize(p, s: integer);
+    function GetSpriteX(s: integer): integer;
+    function GetSpriteY(s: integer): integer;
+    function GetSpriteW(s: integer): integer;
+    function GetSpriteH(s: integer): integer;
+    procedure SetSpriteX(s, x: integer);
+    procedure SetSpriteY(s, y: integer);
+    procedure SetSpriteW(s, w: integer);
+    procedure SetSpriteH(s, h: integer);
   public
     { Public declarations }
   end;
@@ -104,6 +112,11 @@ const
   side_bottom: integer = 2;
   side_left: integer = 4;
   side_right: integer = 8;
+  spritetable_x: integer = 0;
+  spritetable_y: integer = 1;
+  spritetable_w: integer = 2;
+  spritetable_h: integer = 3;
+  spritetable_items: integer = 4;
   piecetable_x: integer = 0;
   piecetable_y: integer = 1;
   piecetable_bits: integer = 2;
@@ -188,10 +201,10 @@ begin
   // Sprite boxes.
   for i := 0 to spritecount-1 do // Draw sprite boxes.
     begin
-    x := ((spritetable[i*4]-spritetable[(i*4)+2]-pos_x)*scale)+pbWorkspace.Left;
-    y := ((spritetable[(i*4)+1]-spritetable[(i*4)+3]-pos_y)*scale)+pbWorkspace.Top;
-    w := spritetable[(i*4)+2]*2*scale;
-    h := spritetable[(i*4)+3]*2*scale;
+    x := ((GetSpriteX(i)-GetSpriteW(i)-pos_x)*scale)+pbWorkspace.Left;
+    y := ((GetSpriteY(i)-GetSpriteH(i)-pos_y)*scale)+pbWorkspace.Top;
+    w := GetSpriteW(i)*2*scale;
+    h := GetSpriteH(i)*2*scale;
     DrawBox(sc[0],sc[1],sc[2],255,x,y,w,h); // Draw box around sprite.
     DrawGrid(sc[0],sc[1],sc[2],128,x,y,w,h,2,2,false); // Draw 2x2 grid.
     if (layer = 1) and (i = spriteselect) then
@@ -374,18 +387,18 @@ begin
       begin
       s2 := Explode(s,'sprite=',1);
       SetLength(spritenames,Length(spritenames)+1); // Add sprite.
-      SetLength(spritetable,Length(spritetable)+4);
+      SetLength(spritetable,Length(spritetable)+spritetable_items);
       spritenames[spritecount] := Explode(s2,',',0); // Sprite name.
-      spritetable[spritecount*4] := StrToInt(Explode(s2,',',1)); // Sprite x pos.
-      spritetable[(spritecount*4)+1] := StrToInt(Explode(s2,',',2)); // Sprite y pos.
-      spritetable[(spritecount*4)+2] := StrToInt(Explode(s2,',',3)); // Sprite width.
-      spritetable[(spritecount*4)+3] := StrToInt(Explode(s2,',',4)); // Sprite height.
+      SetSpriteX(spritecount,StrToInt(Explode(s2,',',1))); // Sprite x pos.
+      SetSpriteY(spritecount,StrToInt(Explode(s2,',',2))); // Sprite y pos.
+      SetSpriteW(spritecount,StrToInt(Explode(s2,',',3))); // Sprite width.
+      SetSpriteH(spritecount,StrToInt(Explode(s2,',',4))); // Sprite height.
       Inc(spritecount);
       end
     else if AnsiPos('piece=',s) = 1 then
       begin
       s2 := Explode(s,'piece=',1);
-      SetLength(piecetable,Length(piecetable)+4); // Add piece.
+      SetLength(piecetable,Length(piecetable)+piecetable_items); // Add piece.
       SetPieceX(piececount,StrToInt(Explode(s2,',',0))); // Piece x pos.
       SetPieceY(piececount,StrToInt(Explode(s2,',',1))); // Piece y pos.
       SetPieceBits(piececount,StrToInt(Explode(s2,',',2))); // Piece palette.
@@ -417,8 +430,8 @@ begin
   Delete(s,Length(s),1); // Remove trailing comma.
   WriteLn(inifile,s); // Write palette.
   s := 'sprite=';
-  for i := 0 to spritecount-1 do WriteLn(inifile,s+spritenames[i]+','+IntToStr(spritetable[i*4])+','+
-    IntToStr(spritetable[(i*4)+1])+','+IntToStr(spritetable[(i*4)+2])+','+IntToStr(spritetable[(i*4)+3])); // Write sprite table.
+  for i := 0 to spritecount-1 do WriteLn(inifile,s+spritenames[i]+','+IntToStr(GetSpriteX(i))+','+
+    IntToStr(GetSpriteY(i))+','+IntToStr(GetSpriteW(i))+','+IntToStr(GetSpriteH(i))); // Write sprite table.
   s := 'piece=';
   for i := 0 to piececount-1 do WriteLn(inifile,s+IntToStr(GetPieceX(i))+','+
     IntToStr(GetPieceY(i))+','+IntToStr(GetPieceBits(i))+','+IntToStr(GetPieceSize(i))); // Write piece table.
@@ -517,10 +530,10 @@ begin
       begin
       layer := 1; // Select sprite layer.
       spriteside := 0; // Assume edge of sprite wasn't clicked.
-      if mouseimg_x <= spritetable[i*4]-spritetable[(i*4)+2]+edgew then spriteside := side_left;
-      if mouseimg_x >= spritetable[i*4]+spritetable[(i*4)+2]-edgew then spriteside := side_right;
-      if mouseimg_y <= spritetable[(i*4)+1]-spritetable[(i*4)+3]+edgew then spriteside := spriteside+side_top;
-      if mouseimg_y >= spritetable[(i*4)+1]+spritetable[(i*4)+3]-edgew then spriteside := spriteside+side_bottom;
+      if mouseimg_x <= GetSpriteX(i)-GetSpriteW(i)+edgew then spriteside := side_left;
+      if mouseimg_x >= GetSpriteX(i)+GetSpriteW(i)-edgew then spriteside := side_right;
+      if mouseimg_y <= GetSpriteY(i)-GetSpriteH(i)+edgew then spriteside := spriteside+side_top;
+      if mouseimg_y >= GetSpriteY(i)+GetSpriteH(i)-edgew then spriteside := spriteside+side_bottom;
       spriteselect := i;
       end;
     i := FindPiece(mouseimg_x,mouseimg_y); // Find piece under mouse pointer.
@@ -553,19 +566,19 @@ begin
       Inc(spritecount); // Add sprite.
       SetLength(spritenames,spritecount);
       spritenames[i] := 'sprite'+IntToStr(i); // Give sprite name "sprite#".
-      SetLength(spritetable,spritecount*4);
+      SetLength(spritetable,spritecount*spritetable_items);
       if chkSnap.Checked then
         begin
-        spritetable[i*4] := Nearest(mouseimg_x,grid_w);
-        spritetable[(i*4)+1] := Nearest(mouseimg_y,grid_h);
+        SetSpriteX(i,Nearest(mouseimg_x,grid_w));
+        SetSpriteY(i,Nearest(mouseimg_y,grid_h));
         end
       else
         begin
-        spritetable[i*4] := mouseimg_x;
-        spritetable[(i*4)+1] := mouseimg_y;
+        SetSpriteX(i,mouseimg_x);
+        SetSpriteY(i,mouseimg_y);
         end;
-      spritetable[(i*4)+2] := 40;
-      spritetable[(i*4)+3] := 40;
+      SetSpriteW(i,40);
+      SetSpriteH(i,40);
       spriteselect := i; // Select new sprite.
       layer := 1;
       end;
@@ -578,7 +591,7 @@ var i: integer;
 begin
   result := -1; // Assume no sprite found.
   for i := spritecount-1 downto 0 do
-    if (Abs(x-spritetable[i*4]) < spritetable[(i*4)+2]) and (Abs(y-spritetable[(i*4)+1]) < spritetable[(i*4)+3]) then
+    if (Abs(x-GetSpriteX(i)) < GetSpriteW(i)) and (Abs(y-GetSpriteY(i)) < GetSpriteH(i)) then
       begin
       result := i;
       break; // Stop searching.
@@ -616,8 +629,8 @@ begin
   drag := false;
   if (layer = 1) and (spriteside = 0) and chkSnap.Checked then
     begin
-    spritetable[spriteselect*4] := Nearest(spritetable[spriteselect*4],grid_w); // Snap to grid.
-    spritetable[(spriteselect*4)+1] := Nearest(spritetable[(spriteselect*4)+1],grid_h);
+    SetSpriteX(spriteselect,Nearest(GetSpriteX(spriteselect),grid_w)); // Snap to grid.
+    SetSpriteY(spriteselect,Nearest(GetSpriteY(spriteselect),grid_h));
     UpdateDisplay;
     end;
 end;
@@ -644,17 +657,17 @@ begin
       begin
       if spriteside = 0 then
         begin
-        spritetable[spriteselect*4] := spritetable[spriteselect*4]-dx; // Move sprite box.
-        spritetable[(spriteselect*4)+1] := spritetable[(spriteselect*4)+1]-dy;
+        SetSpriteX(spriteselect,GetSpriteX(spriteselect)-dx); // Move sprite box.
+        SetSpriteY(spriteselect,GetSpriteY(spriteselect)-dy);
         end;
       if spriteside and side_top <> 0 then
-        spritetable[(spriteselect*4)+3] := Max(spritetable[(spriteselect*4)+3]+dy,16); // Resize sprite box.
+        SetSpriteH(spriteselect,Max(GetSpriteH(spriteselect)+dy,16)); // Resize sprite box.
       if spriteside and side_bottom <> 0 then
-        spritetable[(spriteselect*4)+3] := Max(spritetable[(spriteselect*4)+3]-dy,16);
+        SetSpriteH(spriteselect,Max(GetSpriteH(spriteselect)-dy,16));
       if spriteside and side_left <> 0 then
-        spritetable[(spriteselect*4)+2] := Max(spritetable[(spriteselect*4)+2]+dx,16);
+        SetSpriteW(spriteselect,Max(GetSpriteW(spriteselect)+dx,16));
       if spriteside and side_right <> 0 then
-        spritetable[(spriteselect*4)+2] := Max(spritetable[(spriteselect*4)+2]-dx,16);
+        SetSpriteW(spriteselect,Max(GetSpriteW(spriteselect)-dx,16));
       end;
     2: // Piece.
       begin
@@ -712,13 +725,13 @@ begin
   for j := i to spritecount-2 do
     begin
     spritenames[j] := spritenames[j+1]; // Shift names back 1.
-    spritetable[j*4] := spritetable[(j*4)+4];
-    spritetable[(j*4)+1] := spritetable[(j*4)+5];
-    spritetable[(j*4)+2] := spritetable[(j*4)+6];
-    spritetable[(j*4)+3] := spritetable[(j*4)+7];
+    SetSpriteX(j,GetSpriteX(j+1));
+    SetSpriteY(j,GetSpriteY(j+1));
+    SetSpriteW(j,GetSpriteW(j+1));
+    SetSpriteH(j,GetSpriteH(j+1));
     end;
   SetLength(spritenames,Length(spritenames)-1); // Truncate array.
-  SetLength(spritetable,Length(spritetable)-4);
+  SetLength(spritetable,Length(spritetable)-spritetable_items);
   Dec(spritecount); // Decrement counter;
   spriteselect := -1; // Deselect sprite.
 end;
@@ -769,10 +782,10 @@ function TForm1.PieceInSprite(p, s: integer): boolean;
 var x, y, w, h: integer;
 begin
   result := false; // Assume piece isn't in sprite.
-  x := spritetable[s*4]-spritetable[(s*4)+2]; // Get position of sprite.
-  y := spritetable[(s*4)+1]-spritetable[(s*4)+3];
-  w := spritetable[(s*4)+2]*2; // Get width/height of sprite.
-  h := spritetable[(s*4)+3]*2;
+  x := GetSpriteX(s)-GetSpriteW(s); // Get position of sprite.
+  y := GetSpriteY(s)-GetSpriteH(s);
+  w := GetSpriteW(s)*2; // Get width/height of sprite.
+  h := GetSpriteH(s)*2;
   if GetPieceX(p) < x then exit; // Piece is left of sprite.
   if GetPieceY(p) < y then exit; // Piece is above sprite.
   if GetPieceX(p)+GetPieceW(p) >= x+w then exit; // Piece is right of sprite.
@@ -851,6 +864,46 @@ procedure TForm1.SetPieceSize(p, s: integer);
 begin
   if s > 15 then s := 15;
   piecetable[(p*piecetable_items)+piecetable_size] := s;
+end;
+
+function TForm1.GetSpriteX(s: integer): integer;
+begin
+  result := spritetable[(s*spritetable_items)+spritetable_x];
+end;
+
+function TForm1.GetSpriteY(s: integer): integer;
+begin
+  result := spritetable[(s*spritetable_items)+spritetable_y];
+end;
+
+function TForm1.GetSpriteW(s: integer): integer;
+begin
+  result := spritetable[(s*spritetable_items)+spritetable_w];
+end;
+
+function TForm1.GetSpriteH(s: integer): integer;
+begin
+  result := spritetable[(s*spritetable_items)+spritetable_h];
+end;
+
+procedure TForm1.SetSpriteX(s, x: integer);
+begin
+  spritetable[(s*spritetable_items)+spritetable_x] := x;
+end;
+
+procedure TForm1.SetSpriteY(s, y: integer);
+begin
+  spritetable[(s*spritetable_items)+spritetable_y] := y;
+end;
+
+procedure TForm1.SetSpriteW(s, w: integer);
+begin
+  spritetable[(s*spritetable_items)+spritetable_w] := w;
+end;
+
+procedure TForm1.SetSpriteH(s, h: integer);
+begin
+  spritetable[(s*spritetable_items)+spritetable_h] := h;
 end;
 
 end.
