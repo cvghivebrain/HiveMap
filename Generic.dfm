@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 192
   Top = 124
   Caption = 'HiveMap'
-  ClientHeight = 625
-  ClientWidth = 1245
+  ClientHeight = 615
+  ClientWidth = 1205
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -86,6 +86,19 @@ object Form1: TForm1
     Width = 192
     Height = 192
     OnMouseDown = pbPieceMouseDown
+  end
+  object lblHi: TLabel
+    Left = 1184
+    Top = 300
+    Width = 56
+    Height = 13
+    Caption = 'High Priority'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
   end
   object btnLoad: TButton
     Left = 8
@@ -221,6 +234,21 @@ object Form1: TForm1
     Caption = 'Delete Sprite + Pieces'
     TabOrder = 9
     OnClick = btnDelPiecesClick
+  end
+  object chkHi: TCheckBox
+    Left = 1167
+    Top = 299
+    Width = 97
+    Height = 17
+    Enabled = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 10
+    OnClick = chkHiClick
   end
   object dlgLoad: TOpenDialog
     Left = 480

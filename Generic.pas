@@ -27,6 +27,8 @@ type
     pbPiece: TPaintBox;
     btnDelete: TButton;
     btnDelPieces: TButton;
+    chkHi: TCheckBox;
+    lblHi: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
@@ -54,6 +56,7 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure btnDeleteClick(Sender: TObject);
     procedure btnDelPiecesClick(Sender: TObject);
+    procedure chkHiClick(Sender: TObject);
   private
     { Private declarations }
     procedure LoadPNG;
@@ -161,6 +164,8 @@ begin
   pbPiece.Left := memINI.Left;
   btnDelete.Left := memINI.Left;
   btnDelPieces.Left := memINI.Left+btnDelete.Width+6;
+  chkHi.Left := pbPiece.Left+pbPiece.Width+6;
+  lblHi.Left := chkHi.Left+18;
   UpdateDisplay;
 end;
 
@@ -254,7 +259,11 @@ begin
         end;
     editSprite.EditLabel.Caption := 'Sprite '+IntToStr(spriteselect+1)+'/'+IntToStr(spritecount)+' ['+Quantity(j,'piece')+'; '+Quantity(k,'tile')+']'; // Show sprite number.
     end;
-  if pieceselect = -1 then lblPiece.Caption := 'Piece'
+  if pieceselect = -1 then
+    begin
+    lblPiece.Caption := 'Piece';
+    chkHi.Enabled := false;
+    end
   else
     begin
     lblPiece.Caption := 'Piece '+IntToStr(pieceselect+1)+'/'+IntToStr(piececount); // Show piece number.
@@ -272,6 +281,9 @@ begin
     p := GetPiecePal(pieceselect)*3;
     DrawBox2(pc[p],pc[p+1],pc[p+2],255,pbPiece.Left,pbPiece.Top,(GetPieceW(pieceselect)*w)+1,(GetPieceH(pieceselect)*h)+1,2); // Highlight piece.
     DrawBox2(255,255,255,255,pbPalette.Left,pbPalette.Top+(GetPiecePal(pieceselect)*color_h),pbPalette.Width,color_h,2); // Highlight palette line.
+    chkHi.Enabled := true;
+    if GetPieceHi(pieceselect) = 0 then chkHi.Checked := false
+    else chkHi.Checked := true;
     end;
   pic.Refresh;
 end;
@@ -694,6 +706,14 @@ end;
 
 procedure TForm1.chkGridClick(Sender: TObject);
 begin
+  UpdateDisplay;
+end;
+
+procedure TForm1.chkHiClick(Sender: TObject);
+begin
+  if pieceselect = -1 then exit;
+  if chkHi.Checked = true then SetPieceHi(pieceselect,$10)
+  else SetPieceHi(pieceselect,0);
   UpdateDisplay;
 end;
 
