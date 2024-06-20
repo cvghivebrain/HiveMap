@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 192
   Top = 124
   Caption = 'HiveMap'
-  ClientHeight = 615
-  ClientWidth = 1205
+  ClientHeight = 607
+  ClientWidth = 1279
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -220,19 +220,20 @@ object Form1: TForm1
   object btnDelete: TButton
     Left = 969
     Top = 240
-    Width = 75
-    Height = 25
+    Width = 69
+    Height = 34
     Caption = 'Delete Sprite'
     TabOrder = 8
     OnClick = btnDeleteClick
   end
   object btnDelPieces: TButton
-    Left = 1050
+    Left = 1044
     Top = 240
-    Width = 119
-    Height = 25
+    Width = 69
+    Height = 33
     Caption = 'Delete Sprite + Pieces'
     TabOrder = 9
+    WordWrap = True
     OnClick = btnDelPiecesClick
   end
   object chkHi: TCheckBox
@@ -249,6 +250,26 @@ object Form1: TForm1
     ParentFont = False
     TabOrder = 10
     OnClick = chkHiClick
+  end
+  object btnHigh: TButton
+    Left = 1119
+    Top = 240
+    Width = 69
+    Height = 33
+    Caption = 'All Pieces High Priority'
+    TabOrder = 11
+    WordWrap = True
+    OnClick = btnHighClick
+  end
+  object btnLow: TButton
+    Left = 1194
+    Top = 240
+    Width = 69
+    Height = 33
+    Caption = 'All Pieces Low Priority'
+    TabOrder = 12
+    WordWrap = True
+    OnClick = btnLowClick
   end
   object dlgLoad: TOpenDialog
     Left = 480

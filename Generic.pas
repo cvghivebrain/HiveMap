@@ -29,6 +29,8 @@ type
     btnDelPieces: TButton;
     chkHi: TCheckBox;
     lblHi: TLabel;
+    btnHigh: TButton;
+    btnLow: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnLoadClick(Sender: TObject);
@@ -57,6 +59,8 @@ type
     procedure btnDeleteClick(Sender: TObject);
     procedure btnDelPiecesClick(Sender: TObject);
     procedure chkHiClick(Sender: TObject);
+    procedure btnHighClick(Sender: TObject);
+    procedure btnLowClick(Sender: TObject);
   private
     { Private declarations }
     procedure LoadPNG;
@@ -164,6 +168,8 @@ begin
   pbPiece.Left := memINI.Left;
   btnDelete.Left := memINI.Left;
   btnDelPieces.Left := memINI.Left+btnDelete.Width+6;
+  btnHigh.Left := btnDelPieces.Left+btnDelPieces.Width+6;
+  btnLow.Left := btnHigh.Left+btnHigh.Width+6;
   chkHi.Left := pbPiece.Left+pbPiece.Width+6;
   lblHi.Left := chkHi.Left+18;
   UpdateDisplay;
@@ -263,6 +269,7 @@ begin
     begin
     lblPiece.Caption := 'Piece';
     chkHi.Enabled := false;
+    chkHi.Checked := false;
     end
   else
     begin
@@ -795,6 +802,24 @@ begin
       end
     else Inc(i); // Next piece.
   DeleteSprite(spriteselect); // Delete selected sprite.
+  UpdateDisplay;
+end;
+
+procedure TForm1.btnHighClick(Sender: TObject);
+var i: integer;
+begin
+  if spriteselect = -1 then exit;
+  for i := 0 to piececount-1 do
+    if PieceInSprite(i,spriteselect) then SetPieceHi(i,$10); // Check if each piece is in the sprite.
+  UpdateDisplay;
+end;
+
+procedure TForm1.btnLowClick(Sender: TObject);
+var i: integer;
+begin
+  if spriteselect = -1 then exit;
+  for i := 0 to piececount-1 do
+    if PieceInSprite(i,spriteselect) then SetPieceHi(i,0); // Check if each piece is in the sprite.
   UpdateDisplay;
 end;
 
