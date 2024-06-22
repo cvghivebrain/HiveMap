@@ -114,7 +114,6 @@ var
 
 const
   max_scale: integer = 6;
-  corner_dim: integer = 6;
   side_top: integer = 1;
   side_bottom: integer = 2;
   side_left: integer = 4;
@@ -134,6 +133,7 @@ const
   piecewidth: array[0..15] of integer = (8,8,8,8,16,16,16,16,24,24,24,24,32,32,32,32);
   pieceheight: array[0..15] of integer = (8,16,24,32,8,16,24,32,8,16,24,32,8,16,24,32);
   tilecount: array[0..15] of integer = (1,2,3,4,2,4,6,8,3,6,9,12,4,8,12,16);
+  corner_dim: array[1..6] of integer = (8,8,8,10,10,12);
 
 implementation
 
@@ -176,7 +176,7 @@ begin
 end;
 
 procedure TForm1.UpdateDisplay;
-var w, h, x, y, i, j, k, p: integer;
+var w, h, x, y, i, j, k, p, cnr: integer;
   col: TColor;
 const bg: array[0..2] of byte = (40,44,52); // Background colour.
   sc: array[0..2] of byte = (255,255,255); // Sprite colour.
@@ -218,12 +218,17 @@ begin
     h := GetSpriteH(i)*2*scale;
     DrawBox(sc[0],sc[1],sc[2],255,x,y,w,h); // Draw box around sprite.
     DrawGrid(sc[0],sc[1],sc[2],128,x,y,w,h,2,2,false); // Draw 2x2 grid.
-    if (layer = 1) and (i = spriteselect) then
+    if (layer = 1) and (i = spriteselect) then // Highlight corners of selected sprite.
       begin
-      DrawRect(sc[0],sc[1],sc[2],255,x,y,corner_dim,corner_dim); // Highlight corners of selected sprite.
-      DrawRect(sc[0],sc[1],sc[2],255,x+w-corner_dim,y,corner_dim,corner_dim);
-      DrawRect(sc[0],sc[1],sc[2],255,x,y+h-corner_dim,corner_dim,corner_dim);
-      DrawRect(sc[0],sc[1],sc[2],255,x+w-corner_dim,y+h-corner_dim,corner_dim,corner_dim);
+      cnr := corner_dim[scale];
+      DrawRect(sc[0],sc[1],sc[2],255,x,y,cnr,cnr); // Top left.
+      DrawRect(sc[0],sc[1],sc[2],255,x+((w-cnr) div 2),y,cnr,cnr); // Top middle.
+      DrawRect(sc[0],sc[1],sc[2],255,x+w-cnr,y,cnr,cnr); // Top right.
+      DrawRect(sc[0],sc[1],sc[2],255,x,y+((h-cnr) div 2),cnr,cnr); // Middle left.
+      DrawRect(sc[0],sc[1],sc[2],255,x+w-cnr,y+((h-cnr) div 2),cnr,cnr); // Middle right.
+      DrawRect(sc[0],sc[1],sc[2],255,x,y+h-cnr,cnr,cnr); // Bottom left.
+      DrawRect(sc[0],sc[1],sc[2],255,x+((w-cnr) div 2),y+h-cnr,cnr,cnr); // Bottom middle.
+      DrawRect(sc[0],sc[1],sc[2],255,x+w-cnr,y+h-cnr,cnr,cnr); // Bottom right.
       end;
     end;
 
@@ -532,9 +537,8 @@ begin
     end;
   if Button = mbLeft then // Left click.
     begin
-    edgew := corner_dim+4; // Set thickness of clickable edges.
+    edgew := corner_dim[scale]+4; // Set thickness of clickable edges.
     layer := 0; // Assume the background was selected.
-    spriteselect := -1; // Assume no sprite selected.
     pieceselect := -1; // Assume no piece selected.
     drag := true; // Start dragging whatever is under mouse.
     prev_x := X;
@@ -549,12 +553,13 @@ begin
       begin
       layer := 1; // Select sprite layer.
       spriteside := 0; // Assume edge of sprite wasn't clicked.
-      if mouseimg_x <= GetSpriteX(i)-GetSpriteW(i)+edgew then spriteside := side_left;
-      if mouseimg_x >= GetSpriteX(i)+GetSpriteW(i)-edgew then spriteside := side_right;
-      if mouseimg_y <= GetSpriteY(i)-GetSpriteH(i)+edgew then spriteside := spriteside+side_top;
-      if mouseimg_y >= GetSpriteY(i)+GetSpriteH(i)-edgew then spriteside := spriteside+side_bottom;
+      if mouseimg_x*scale <= ((GetSpriteX(i)-GetSpriteW(i))*scale)+edgew then spriteside := side_left;
+      if mouseimg_x*scale >= ((GetSpriteX(i)+GetSpriteW(i))*scale)-edgew then spriteside := side_right;
+      if mouseimg_y*scale <= ((GetSpriteY(i)-GetSpriteH(i))*scale)+edgew then spriteside := spriteside+side_top;
+      if mouseimg_y*scale >= ((GetSpriteY(i)+GetSpriteH(i))*scale)-edgew then spriteside := spriteside+side_bottom;
       spriteselect := i;
-      end;
+      end
+    else spriteselect := -1; // Background was clicked.
     i := FindPiece(mouseimg_x,mouseimg_y); // Find piece under mouse pointer.
     if i <> -1 then
       begin
