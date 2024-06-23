@@ -661,9 +661,28 @@ end;
 
 procedure TForm1.pbWorkspaceMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
-var dx, dy: integer;
+var dx, dy, spx, spy, spw, sph, cnr, hcnr: integer;
 begin
   GetMousePos(X,Y);
+  if not drag then Screen.Cursor := crArrow; // Use arrow cursor by default, but keep cursor if dragging.
+  if (layer = 1) and (spriteselect <> -1) and (not drag) then
+    begin
+    spx := (GetSpriteX(spriteselect)-GetSpriteW(spriteselect)-pos_x)*scale; // Get position of sprite on screen.
+    spy := (GetSpriteY(spriteselect)-GetSpriteH(spriteselect)-pos_y)*scale;
+    spw := GetSpriteW(spriteselect)*scale;
+    sph := GetSpriteH(spriteselect)*scale;
+    cnr := corner_dim[scale];
+    hcnr := cnr div 2;
+    if (X >= spx) and (Y >= spy) and (X < spx+cnr) and (Y < spy+cnr) then Screen.Cursor := crSizeNWSE // Top left.
+    else if (X >= spx+spw-hcnr) and (Y >= spy) and (X < spx+spw+hcnr) and (Y < spy+cnr) then Screen.Cursor := crSizeNS // Top middle.
+    else if (X >= spx+(spw*2)-cnr) and (Y >= spy) and (X < spx+(spw*2)) and (Y < spy+cnr) then Screen.Cursor := crSizeNESW // Top right.
+    else if (X >= spx) and (Y >= spy+sph-hcnr) and (X < spx+cnr) and (Y < spy+sph+hcnr) then Screen.Cursor := crSizeWE // Middle left.
+    else if (X >= spx+(spw*2)-cnr) and (Y >= spy+sph-hcnr) and (X < spx+(spw*2)) and (Y < spy+sph+hcnr) then Screen.Cursor := crSizeWE // Middle right.
+    else if (X >= spx) and (Y >= spy+(sph*2)-cnr) and (X < spx+cnr) and (Y < spy+(sph*2)) then Screen.Cursor := crSizeNESW // Bottom left.
+    else if (X >= spx+spw-hcnr) and (Y >= spy+(sph*2)-cnr) and (X < spx+spw+hcnr) and (Y < spy+(sph*2)) then Screen.Cursor := crSizeNS // Bottom middle.
+    else if (X >= spx+(spw*2)-cnr) and (Y >= spy+(sph*2)-cnr) and (X < spx+(spw*2)) and (Y < spy+(sph*2)) then Screen.Cursor := crSizeNWSE // Bottom right.
+    else Screen.Cursor := crArrow;
+    end;
   if colorselect <> -1 then Screen.Cursor := crCross; // Use crosshair cursor if in colour select mode.
   if not drag then exit; // Do nothing if not dragging.
   if not pngloaded then exit; // Do nothing if no PNG is loaded.
