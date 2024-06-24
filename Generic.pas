@@ -133,7 +133,7 @@ const
   piecewidth: array[0..15] of integer = (8,8,8,8,16,16,16,16,24,24,24,24,32,32,32,32);
   pieceheight: array[0..15] of integer = (8,16,24,32,8,16,24,32,8,16,24,32,8,16,24,32);
   tilecount: array[0..15] of integer = (1,2,3,4,2,4,6,8,3,6,9,12,4,8,12,16);
-  corner_dim: array[1..6] of integer = (8,8,8,10,10,12);
+  corner_dim: array[1..6] of integer = (8,8,10,10,12,12);
 
 implementation
 
@@ -525,7 +525,7 @@ end;
 
 procedure TForm1.pbWorkspaceMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
-var i, j, edgew: integer;
+var i, j: integer;
 begin
   if colorselect <> -1 then
     begin
@@ -537,7 +537,6 @@ begin
     end;
   if Button = mbLeft then // Left click.
     begin
-    edgew := corner_dim[scale]+4; // Set thickness of clickable edges.
     layer := 0; // Assume the background was selected.
     pieceselect := -1; // Assume no piece selected.
     drag := true; // Start dragging whatever is under mouse.
@@ -552,11 +551,21 @@ begin
     if i <> -1 then
       begin
       layer := 1; // Select sprite layer.
-      spriteside := 0; // Assume edge of sprite wasn't clicked.
-      if mouseimg_x*scale <= ((GetSpriteX(i)-GetSpriteW(i))*scale)+edgew then spriteside := side_left;
-      if mouseimg_x*scale >= ((GetSpriteX(i)+GetSpriteW(i))*scale)-edgew then spriteside := side_right;
-      if mouseimg_y*scale <= ((GetSpriteY(i)-GetSpriteH(i))*scale)+edgew then spriteside := spriteside+side_top;
-      if mouseimg_y*scale >= ((GetSpriteY(i)+GetSpriteH(i))*scale)-edgew then spriteside := spriteside+side_bottom;
+      case Screen.Cursor of
+        crSizeNWSE:
+          if mouseimg_x < GetSpriteX(i) then spriteside := side_top+side_left
+          else spriteside := side_bottom+side_right;
+        crSizeNESW:
+          if mouseimg_x < GetSpriteX(i) then spriteside := side_bottom+side_left
+          else spriteside := side_top+side_right;
+        crSizeWE:
+          if mouseimg_x < GetSpriteX(i) then spriteside := side_left
+          else spriteside := side_right;
+        crSizeNS:
+          if mouseimg_y < GetSpriteY(i) then spriteside := side_top
+          else spriteside := side_bottom;
+      else spriteside := 0;
+      end;
       spriteselect := i;
       end
     else spriteselect := -1; // Background was clicked.
