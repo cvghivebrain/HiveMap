@@ -240,9 +240,10 @@ begin
     w := GetPieceW(i)*scale;
     h := GetPieceH(i)*scale;
     p := GetPiecePal(i)*3;
-    DrawBoxFill(pc[p],pc[p+1],pc[p+2],255,pc[p],pc[p+1],pc[p+2],92,x,y,w,h); // Draw box around piece.
+    DrawBoxFill(pc[p],pc[p+1],pc[p+2],255,pc[p],pc[p+1],pc[p+2],64,x,y,w,h); // Draw box around piece.
     if (layer = 2) and (i = pieceselect) then
       DrawBox(pc[p],pc[p+1],pc[p+2],255,x-2,y-2,w+4,h+4); // Draw second box around selected piece.
+    if (GetPieceHi(i) <> 0) and (scale > 1) then DrawTriangleFlat(255,255,255,255,x+w-4,y-8,x+w-8,x+w,y,0);
     end;
 
   // Right menu.
@@ -610,8 +611,8 @@ begin
         SetSpriteX(i,mouseimg_x);
         SetSpriteY(i,mouseimg_y);
         end;
-      SetSpriteW(i,40);
-      SetSpriteH(i,40);
+      SetSpriteW(i,Max(Solve(editGrid.Text)-8,8));
+      SetSpriteH(i,Max(Solve(editGrid.Text)-8,8));
       spriteselect := i; // Select new sprite.
       layer := 1;
       end;
