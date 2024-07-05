@@ -1,9 +1,9 @@
 object Form1: TForm1
   Left = 192
   Top = 124
-  Caption = 'HiveMap'
-  ClientHeight = 607
-  ClientWidth = 1279
+  Caption = 'HiveMap 1.0'
+  ClientHeight = 602
+  ClientWidth = 1259
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
