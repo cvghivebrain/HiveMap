@@ -63,7 +63,11 @@ HiveMap is a sprite mappings editor for Sega Mega Drive games. It takes a PNG sp
 * `dplcindexline=` Repeating line of DPLC index.
   * `{name}` Sprite name.
 * `dplcindexfoot=` Last line of DPLC index.
-* `dplchead=` First line of DPLC entry (usually a label).
+* `dplchead=` First line of DPLC entry (usually a label and header).
+  * `{name}` Sprite name.
+  * `{piececount}` Pieces in sprite.
+  * `{tilecount}` Tiles in sprite.
+  * `{bytecount}` Bytes in sprite.
 * `dplcline=` Repeating line of DPLC entry.
   * `{name}` Sprite name.
   * `{size}` Tiles in piece.
