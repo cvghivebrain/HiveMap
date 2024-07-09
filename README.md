@@ -73,3 +73,6 @@ HiveMap is a sprite mappings editor for Sega Mega Drive games. It takes a PNG sp
   * `{offsetlocal}` Offset within graphics for current sprite.
   * `{offsetglobal}` Offset within all graphics.
 * `dplcfoot=` Last line of DPLC entry.
+
+### Other
+* `{n}` Starts a new line in the output file.
