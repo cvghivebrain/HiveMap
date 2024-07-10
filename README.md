@@ -28,6 +28,7 @@ HiveMap is a sprite mappings editor for Sega Mega Drive games. It takes a PNG sp
 * `gfxfile=` Path to graphics binary file(s).
   * `{name}` Sprite name. Omit this to output to a single graphics file.
 * `gfxline=` Repeating line in graphics list file.
+* `palfile=` Path to palette file.
 
 ### Mappings
 * `mapindexhead=` First line of mappings index (usually a label).
@@ -79,4 +80,5 @@ HiveMap is a sprite mappings editor for Sega Mega Drive games. It takes a PNG sp
 * `dplcfoot=` Last line of DPLC entry.
 
 ### Other
+* `palsize=` Number of colours to export to the palette file. Leave blank to use the number defined in `palette=`.
 * `{n}` Starts a new line in the output file.
