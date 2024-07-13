@@ -3,7 +3,7 @@ object Form1: TForm1
   Top = 124
   Caption = 'HiveMap 1.0'
   ClientHeight = 602
-  ClientWidth = 1259
+  ClientWidth = 1128
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -35,7 +35,7 @@ object Form1: TForm1
     OnMouseUp = pbWorkspaceMouseUp
   end
   object pbPalette: TPaintBox
-    Left = 969
+    Left = 807
     Top = 497
     Width = 320
     Height = 80
@@ -68,7 +68,7 @@ object Form1: TForm1
     ParentFont = False
   end
   object lblPiece: TLabel
-    Left = 969
+    Left = 807
     Top = 280
     Width = 27
     Height = 13
@@ -81,14 +81,14 @@ object Form1: TForm1
     ParentFont = False
   end
   object pbPiece: TPaintBox
-    Left = 969
+    Left = 807
     Top = 299
     Width = 192
     Height = 192
     OnMouseDown = pbPieceMouseDown
   end
   object lblHi: TLabel
-    Left = 1184
+    Left = 1022
     Top = 300
     Width = 56
     Height = 13
@@ -110,16 +110,17 @@ object Form1: TForm1
     OnClick = btnLoadClick
   end
   object memINI: TMemo
-    Left = 969
+    Left = 807
     Top = 0
     Width = 320
     Height = 185
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Courier New'
+    Font.Height = -11
+    Font.Name = 'Consolas'
     Font.Style = []
     ParentFont = False
+    ScrollBars = ssVertical
     TabOrder = 1
   end
   object menuZoom: TComboBox
@@ -145,7 +146,7 @@ object Form1: TForm1
     OnClick = btnSaveClick
   end
   object editSprite: TLabeledEdit
-    Left = 969
+    Left = 807
     Top = 208
     Width = 320
     Height = 26
@@ -218,7 +219,7 @@ object Form1: TForm1
     OnClick = chkGridClick
   end
   object btnDelete: TButton
-    Left = 969
+    Left = 807
     Top = 240
     Width = 69
     Height = 34
@@ -227,7 +228,7 @@ object Form1: TForm1
     OnClick = btnDeleteClick
   end
   object btnDelPieces: TButton
-    Left = 1044
+    Left = 882
     Top = 240
     Width = 69
     Height = 33
@@ -237,7 +238,7 @@ object Form1: TForm1
     OnClick = btnDelPiecesClick
   end
   object chkHi: TCheckBox
-    Left = 1167
+    Left = 1005
     Top = 299
     Width = 97
     Height = 17
@@ -252,7 +253,7 @@ object Form1: TForm1
     OnClick = chkHiClick
   end
   object btnHigh: TButton
-    Left = 1119
+    Left = 957
     Top = 240
     Width = 69
     Height = 33
@@ -262,7 +263,7 @@ object Form1: TForm1
     OnClick = btnHighClick
   end
   object btnLow: TButton
-    Left = 1194
+    Left = 1032
     Top = 240
     Width = 69
     Height = 33
