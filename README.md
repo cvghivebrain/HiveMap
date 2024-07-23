@@ -28,6 +28,9 @@ HiveMap is a sprite mappings editor for Sega Mega Drive games. It takes a PNG sp
 * `gfxfile=` Path to graphics binary file(s).
   * `{name}` Sprite name. Omit this to output to a single graphics file.
 * `gfxline=` Repeating line in graphics list file.
+  * `{name}` Sprite name.
+  * `{file}` File name including folder.
+  * `{filenopath}` File name only.
 * `palfile=` Path to palette file.
 
 ### Mappings
